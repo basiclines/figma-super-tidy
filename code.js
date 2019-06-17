@@ -1,7 +1,7 @@
 // This shows the HTML page in "ui.html". UI is completely optional. Feel free
 // to delete this if you don't want your plugin to have any UI. In that case
 // you can just call methods directly on the "figma" object in your plugin.
-figma.showUI(__html__, { width: 320, height: 280 });
+figma.showUI(__html__, { width: 320, height: 380 });
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
 // callback. The callback will be passed the "pluginMessage" property of the
@@ -12,11 +12,13 @@ figma.ui.onmessage = msg => {
   if (msg.type === 'tidy') {
     var X_GRID = msg.options.spacing.x || 100
     var Y_GRID = msg.options.spacing.y || 200
+    var RENAMING_TEMPLATE = msg.options.renaming_template
+    var RENAMING_ENABLED = msg.options.renaming
 
     // Prepare nodes
     var selection = figma.currentPage.selection
     var input_ids = selection.reduce((acc, item) => {
-      acc.push({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height })
+      acc.push({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height, name: item.name })
       return acc
     }, [])
 
@@ -72,6 +74,9 @@ figma.ui.onmessage = msg => {
           // Populate Y spacing from row
           col.y = row.y
           output_ids.push(col)
+
+          // Apply renaming
+          if (RENAMING_ENABLED) col.name = RENAMING_TEMPLATE.replace('%row', ridx).replace('%col', cidx)
         })
       })
     })()
@@ -81,6 +86,7 @@ figma.ui.onmessage = msg => {
       var match = layers.find(layer => layer.id === item.id)
       match.x = item.x
       match.y = item.y
+      match.name = item.name
       figma.currentPage.appendChild(match)
     })
   }
