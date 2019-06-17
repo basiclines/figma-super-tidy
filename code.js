@@ -12,7 +12,6 @@ figma.ui.onmessage = msg => {
   if (msg.type === 'tidy') {
     var X_GRID = msg.options.spacing.x || 100
     var Y_GRID = msg.options.spacing.y || 200
-    var RENAMING_TEMPLATE = msg.options.renaming_template
     var RENAMING_ENABLED = msg.options.renaming
 
     // Prepare nodes
@@ -76,7 +75,21 @@ figma.ui.onmessage = msg => {
           output_ids.push(col)
 
           // Apply renaming
-          if (RENAMING_ENABLED) col.name = RENAMING_TEMPLATE.replace('%row', ridx).replace('%col', cidx)
+          if (RENAMING_ENABLED) {
+            var row_name = ridx*100
+            var col_name = row_name + cidx
+
+            function zeroPad(num, places) {
+              var zero = places - num.toString().length + 1;
+              return Array(+(zero > 0 && zero)).join("0") + num;
+            }
+
+            if (cidx == 0) {
+                col.name = (ridx == 0) ? zeroPad(row_name, 3) : row_name.toString();
+             } else {
+                col.name = (ridx == 0) ? zeroPad(col_name, 3) : col_name.toString();
+             }
+          }
         })
       })
     })()

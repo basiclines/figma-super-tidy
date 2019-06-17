@@ -30,12 +30,6 @@ p.type--11-pos-bold { margin-bottom: 8px; }
 			</div>
 			<div class="switch__label">Renaming</div>
 		</label>
-		<div id="renaming_options" class="input-icon">
-			<div class="input-icon__icon">
-				<div class="icon icon--adjust icon--black-3"></div >
-			</div>
-			<input id="renaming_template" type="input" class="input-icon__input" placeholder="Renaming template" value="%row-%col">
-		</div>
 	</fieldset>
 
 	<p class="type type--11-pos-bold">Spacing options</p>
@@ -65,16 +59,9 @@ p.type--11-pos-bold { margin-bottom: 8px; }
 <script>
 	// PLUGIN UI CONTROLS
 	var renaming_check = document.getElementById('renaming_check')
-	var renaming_options = document.getElementById('renaming_options')
-	var renaming_template = document.getElementById('renaming_template')
 	var x_spacing = document.getElementById('x_spacing')
 	var y_spacing = document.getElementById('y_spacing')
 	var tidy = document.getElementById('tidy')
-
-	renaming_check.onchange = () => {
-		var isEnabled = renaming_check.checked;
-		(isEnabled) ? renaming_options.classList.remove('hidden') : renaming_options.classList.add('hidden') ;
-	}
 
 	tidy.onclick = () => {
 		var renamingEnabled = renaming_check.checked;
@@ -82,7 +69,6 @@ p.type--11-pos-bold { margin-bottom: 8px; }
 			renaming: renamingEnabled,
 			spacing: { x: parseInt(x_spacing.value), y: parseInt(y_spacing.value) }
 		}
-		if (renamingEnabled) options.renaming_template = renaming_template.value
 
 	  parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
 	}
