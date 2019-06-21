@@ -12,7 +12,7 @@
 	p.type { margin-bottom: 16px; }
 	p.type--11-pos-bold { margin-bottom: 8px; }
 </style>
-<form>
+<form id="form">
 	<p class="type type--11-pos-medium">
 		Super Tidy will reposition and align all your selected frames with the given spacing options in a grid format.
 	</p>
@@ -37,27 +37,28 @@
 			<div class="input-icon__icon">
 				<div class="icon icon--text icon--black-3">X</div >
 			</div>
-			<input id="x_spacing" type="input" class="input-icon__input" placeholder="Horizontal" value="100">
+			<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" min="1" step="1" value="100">
 		</div>
 		<div class="input-icon">
 			<div class="input-icon__icon">
 				<div class="icon icon--text icon--black-3">Y</div>
 			</div>
-			<input id="y_spacing" type="input" class="input-icon__input" placeholder="Vertical" value="200">
+			<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" min="1" step="1" value="200">
 		</div>
 	</fieldset>
 
-	<button type="button" id="tidy" class="button button--primary">Apply to selection</button>
+	<button type="submit" id="tidy" class="button button--primary">Apply to selection</button>
 </form>
 
 <script>
 	// PLUGIN UI CONTROLS
+	var form = document.getElementById('form')
 	var renaming_check = document.getElementById('renaming_check')
 	var x_spacing = document.getElementById('x_spacing')
 	var y_spacing = document.getElementById('y_spacing')
 	var tidy = document.getElementById('tidy')
 
-	tidy.onclick = () => {
+	function applySuperTidy() {
 		var renamingEnabled = renaming_check.checked;
 		var options = {
 			renaming: renamingEnabled,
@@ -65,5 +66,14 @@
 		}
 
 	  parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
+	}
+
+	form.onsubmit = (e) => {
+		applySuperTidy()
+		e.preventDefault()
+	}
+
+	tidy.onclick = () => {
+		applySuperTidy()
 	}
 </script>

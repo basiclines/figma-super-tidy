@@ -10,8 +10,8 @@ figma.ui.onmessage = msg => {
   // One way of distinguishing between different types of messages sent from
   // your HTML page is to use an object with a "type" property like this.
   if (msg.type === 'tidy') {
-    var X_GRID = msg.options.spacing.x || 100
-    var Y_GRID = msg.options.spacing.y || 200
+    var X_GRID = msg.options.spacing.x || 1
+    var Y_GRID = msg.options.spacing.y || 1
     var RENAMING_ENABLED = msg.options.renaming
 
     // Prepare nodes
