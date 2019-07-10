@@ -1,6 +1,5 @@
 var CMD = figma.command
 
-
 function getNodesGroupedbyPosition(nodes) {
   // Prepare nodes
   var input_ids = nodes.reduce((acc, item) => {
@@ -40,9 +39,9 @@ function getNameByPosition(row, col) {
 
   if (col == 0) {
       name = (row == 0) ? zeroPad(row_name, 3) : row_name.toString();
-   } else {
+  } else {
       name = (row == 0) ? zeroPad(col_name, 3) : col_name.toString();
-   }
+  }
 
    return name
 }
@@ -76,7 +75,33 @@ if (CMD == 'reorder') {
   figma.closePlugin();
 } else
 if (CMD == 'tidy') {
+  var allNodes =  figma.currentPage.children
+  var selection = figma.currentPage.selection
+  var groupedNodes = getNodesGroupedbyPosition(selection)
 
+  var x0 = 0
+  var y0 = 0
+  var xPos = 0
+  var yPos = 0
+  var defaultXSpacing = 100
+  var defaultYSpacing = 200
+
+  groupedNodes.forEach((row, rowidx) => {
+    row.columns.forEach((col, colidx) => {
+      if (rowidx == 0 && colidx == 0) {
+        x0 = col.x
+        y0 = col.y
+        xPos = col.x
+        yPos = col.y
+      }
+      var match = allNodes.find(node => node.id === col.id)
+      match.x = xPos + defaultXSpacing
+      match.y = yPos
+      xPos = match.x + match.width
+    })
+    xPos = x0
+    yPos = y0  + ((row.columns[0].height + defaultYSpacing) * (rowidx + 1))
+  })
   figma.closePlugin();
 } else
 if (CMD == 'options') {
