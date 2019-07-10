@@ -9,6 +9,6 @@
 		{"name": "Reorder", "command": "reorder"},
 		{"name": "Tidy", "command": "tidy"},
 		{"separator": true},
-		{"name": "Run...", "command": "options"}
+		{"name": "Run all...", "command": "options"}
 	]
 }

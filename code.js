@@ -46,8 +46,7 @@ function getNameByPosition(row, col) {
    return name
 }
 
-// Run with command
-if (CMD == 'rename') {
+function cmdRename() {
   var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
   var groupedNodes = getNodesGroupedbyPosition(selection)
@@ -59,9 +58,9 @@ if (CMD == 'rename') {
       match.name = name
     })
   })
-  figma.closePlugin();
-} else
-if (CMD == 'reorder') {
+}
+
+function cmdReorder() {
   var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
   var groupedNodes = getNodesGroupedbyPosition(selection)
@@ -72,9 +71,9 @@ if (CMD == 'reorder') {
       figma.currentPage.appendChild(match)
     })
   })
-  figma.closePlugin();
-} else
-if (CMD == 'tidy') {
+}
+
+function cmdTidy(xSpacing, ySpacing) {
   var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
   var groupedNodes = getNodesGroupedbyPosition(selection)
@@ -83,8 +82,8 @@ if (CMD == 'tidy') {
   var y0 = 0
   var xPos = 0
   var yPos = 0
-  var defaultXSpacing = 100
-  var defaultYSpacing = 200
+  var defaultXSpacing = xSpacing || 100
+  var defaultYSpacing = ySpacing || 200
 
   groupedNodes.forEach((row, rowidx) => {
     row.columns.forEach((col, colidx) => {
@@ -102,6 +101,19 @@ if (CMD == 'tidy') {
     xPos = x0
     yPos = y0  + ((row.columns[0].height + defaultYSpacing) * (rowidx + 1))
   })
+}
+
+// Run with command
+if (CMD == 'rename') {
+  cmdRename()
+  figma.closePlugin();
+} else
+if (CMD == 'reorder') {
+  cmdReorder()
+  figma.closePlugin();
+} else
+if (CMD == 'tidy') {
+  cmdTidy()
   figma.closePlugin();
 } else
 if (CMD == 'options') {
@@ -109,57 +121,15 @@ if (CMD == 'options') {
 
   figma.ui.onmessage = msg => {
     if (msg.type === 'tidy') {
-      var X_GRID = msg.options.spacing.x || 1
-      var Y_GRID = msg.options.spacing.y || 1
+      var X_SPACING = msg.options.spacing.x
+      var Y_SPACING = msg.options.spacing.y
       var RENAMING_ENABLED = msg.options.renaming
 
-      // Apply correct spacing
-      var output_ids = [];
-      (function() {
-        var last_y = 0
-        var last_height = 0
-        rows.map((row, ridx) => {
-          var last_x = 0
-          var last_width = 0
-
-          // Unify Y spacing for rows
-          if (ridx != 0) {
-            row.y = last_y + last_height + Y_GRID
-          }
-          last_y = row.y
-          last_height = row.columns[0].height
-
-          row.columns.map((col, cidx) => {
-            // Unify X spacing for columns in the same row
-            if (cidx != 0) {
-              col.x = last_x + last_width + X_GRID
-            }
-            last_x = col.x
-            last_width = col.width
-
-            // Populate Y spacing from row
-            col.y = row.y
-            output_ids.push(col)
-
-            // Apply renaming
-            if (RENAMING_ENABLED) {
-
-            }
-          })
-        })
-      })()
-
-      var layers =  figma.currentPage.children
-      output_ids.reverse().map(item => {
-        var match = layers.find(layer => layer.id === item.id)
-        match.x = item.x
-        match.y = item.y
-        match.name = item.name
-        figma.currentPage.appendChild(match)
-      })
+      if (RENAMING_ENABLED) cmdRename()
+      cmdTidy(X_SPACING, Y_SPACING)
+      cmdReorder()
+      figma.closePlugin();
     }
-
-    figma.closePlugin();
-  };
+  }
 }
 
