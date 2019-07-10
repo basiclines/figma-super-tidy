@@ -3,5 +3,12 @@
   "id": "ueYkL4V4SbJSTXcJmWzknv",
   "version": "0.5.0",
   "html": "ui.html",
-  "script": "code.js"
+  "script": "code.js",
+	"menu": [
+		{"name": "Rename", "command": "rename"},
+		{"name": "Reorder", "command": "reorder"},
+		{"name": "Tidy", "command": "tidy"},
+		{"separator": true},
+		{"name": "Run...", "command": "options"}
+	]
 }
