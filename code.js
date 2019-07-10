@@ -47,7 +47,6 @@ function getNameByPosition(row, col) {
    return name
 }
 
-
 // Run with command
 if (CMD == 'rename') {
   var allNodes =  figma.currentPage.children
@@ -64,7 +63,16 @@ if (CMD == 'rename') {
   figma.closePlugin();
 } else
 if (CMD == 'reorder') {
+  var allNodes =  figma.currentPage.children
+  var selection = figma.currentPage.selection
+  var groupedNodes = getNodesGroupedbyPosition(selection)
 
+  groupedNodes.reverse().forEach(row => {
+    row.columns.reverse().forEach(col => {
+      var match = allNodes.find(node => node.id === col.id)
+      figma.currentPage.appendChild(match)
+    })
+  })
   figma.closePlugin();
 } else
 if (CMD == 'tidy') {
