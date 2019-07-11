@@ -82,8 +82,8 @@ function cmdTidy(xSpacing, ySpacing) {
   var y0 = 0
   var xPos = 0
   var yPos = 0
-  var defaultXSpacing = xSpacing || 100
-  var defaultYSpacing = ySpacing || 200
+  var defaultXSpacing = (typeof xSpacing == 'undefined') ? 100 : xSpacing ;
+  var defaultYSpacing = (typeof ySpacing == 'undefined') ? 200 : ySpacing ;
 
   groupedNodes.forEach((row, rowidx) => {
     row.columns.forEach((col, colidx) => {
@@ -117,7 +117,7 @@ if (CMD == 'tidy') {
   figma.closePlugin();
 } else
 if (CMD == 'options') {
-  figma.showUI(__html__, { width: 320, height: 336 });
+  figma.showUI(__html__, { width: 320, height: 360 });
 
   figma.ui.onmessage = msg => {
     if (msg.type === 'tidy') {
