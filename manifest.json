@@ -1,7 +1,7 @@
 {
   "name": "Super Tidy",
 	"id": "731260060173130163",
-  "api": "0.6.0",
+  "api": "1.0.0",
   "ui": "ui.html",
   "main": "code.js",
 	"menu": [
