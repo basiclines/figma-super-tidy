@@ -84,7 +84,18 @@ function cmdTidy(xSpacing, ySpacing) {
   var yPos = 0
   var defaultXSpacing = (typeof xSpacing == 'undefined') ? 100 : xSpacing ;
   var defaultYSpacing = (typeof ySpacing == 'undefined') ? 200 : ySpacing ;
+  var tallestInRow = []
 
+  // Store tallest node per row
+  groupedNodes.forEach((row, rowidx) => {
+      let sortedRowColumns = row.columns.slice()
+	  sortedRowColumns.sort((prev, next) => {
+        return (prev.height > next.height) ? -1 : 1;
+      })
+      tallestInRow.push(sortedRowColumns[0].height)
+  })
+
+  // Reposition nodes
   groupedNodes.forEach((row, rowidx) => {
     row.columns.forEach((col, colidx) => {
       if (rowidx == 0 && colidx == 0) {
@@ -98,8 +109,9 @@ function cmdTidy(xSpacing, ySpacing) {
       match.y = yPos
       xPos = match.x + match.width
     })
+
     xPos = x0
-    yPos = y0  + ((row.columns[0].height + defaultYSpacing) * (rowidx + 1))
+    yPos = yPos + (tallestInRow[rowidx] + defaultYSpacing)
   })
 }
 
