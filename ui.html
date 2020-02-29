@@ -8,19 +8,22 @@
 	* { border: 0; padding: 0; margin: 0; }
 	.hidden { display: none!important; }
 	form { padding: 16px; }
-	fieldset { margin-bottom: 16px; }
+	fieldset { margin-bottom: 0px; }
 	p.type { margin-bottom: 16px; }
 	p.type--11-pos-bold { margin-bottom: 8px; }
+	.tidy-options { padding-left: 40px; }
+	.tidy-options input { width: 128px; }
+
+	.button { margin-top: 16px; }
 </style>
 <form id="form">
 	<p class="type type--11-pos-medium">
-		Super Tidy will reposition and align all your selected frames with the given spacing options in a grid format.
+		Super Tidy renames your frames and reorders them in the layers list by their position in the canvas.
 	</p>
 	<p class="type type--11-pos-medium">
-		It will also reorder your layer list and optionally perform row based renaming.
+		It also replicates the Figma Tidy feature so you can run it all at once: Rename, Reorder and Tidy.
 	</p>
 
-	<p class="type type--11-pos-bold">Renaming options</p>
 	<fieldset>
 		<label class="switch">
 			<div class="switch__container">
@@ -31,41 +34,70 @@
 		</label>
 	</fieldset>
 
-	<p class="type type--11-pos-bold">Spacing options</p>
 	<fieldset>
-		<div class="input-icon">
-			<div class="input-icon__icon">
-				<div class="icon icon--text icon--black-3">X</div >
+		<label class="switch">
+			<div class="switch__container">
+				<input id="reorder_check" type="checkbox" class="switch__checkbox" checked>
+				<span class="switch__slider"></span>
 			</div>
-			<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="100">
-		</div>
-		<div class="input-icon">
-			<div class="input-icon__icon">
-				<div class="icon icon--text icon--black-3">Y</div>
-			</div>
-			<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="200">
-		</div>
+			<div class="switch__label">Reorder</div>
+		</label>
 	</fieldset>
 
-	<button type="submit" id="tidy" class="button button--primary">Apply to selection</button>
+	<fieldset>
+		<label class="switch">
+			<div class="switch__container">
+				<input id="tidy_check" type="checkbox" class="switch__checkbox" checked>
+				<span class="switch__slider"></span>
+			</div>
+			<div class="switch__label">Tidy</div>
+		</label>
+
+		<section class="tidy-options" data-node="tidy-options">
+			<div class="input-icon">
+				<div class="input-icon__icon">
+					<div class="icon icon--text icon--black-3">X</div >
+				</div>
+				<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="100">
+			</div>
+			<div class="input-icon">
+				<div class="input-icon__icon">
+					<div class="icon icon--text icon--black-3">Y</div>
+				</div>
+				<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="200">
+			</div>
+		</section>
+	</fieldset>
+
+	<button type="submit" id="tidy" class="button button--primary">Apply</button>
 </form>
 
 <script>
 	// PLUGIN UI CONTROLS
 	var form = document.getElementById('form')
 	var renaming_check = document.getElementById('renaming_check')
+	var reorder_check = document.getElementById('reorder_check')
+	var tidy_check = document.getElementById('tidy_check')
 	var x_spacing = document.getElementById('x_spacing')
 	var y_spacing = document.getElementById('y_spacing')
 	var tidy = document.getElementById('tidy')
 
 	function applySuperTidy() {
 		var renamingEnabled = renaming_check.checked;
+		var reorderEnabled = reorder_check.checked;
+		var tidyEnabled = tidy_check.checked;
 		var options = {
 			renaming: renamingEnabled,
+			reorder: reorderEnabled,
+			tidy: tidyEnabled,
 			spacing: { x: parseInt(x_spacing.value), y: parseInt(y_spacing.value) }
 		}
 
 	  parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
+	}
+
+	tidy_check.onchange = e => {
+		document.querySelector('[data-node="tidy-options"]').classList.toggle('hidden')
 	}
 
 	form.onsubmit = (e) => {

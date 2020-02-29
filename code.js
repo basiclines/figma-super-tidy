@@ -139,10 +139,12 @@ if (CMD == 'options') {
       var X_SPACING = msg.options.spacing.x
       var Y_SPACING = msg.options.spacing.y
       var RENAMING_ENABLED = msg.options.renaming
+      var REORDER_ENABLED = msg.options.reorder
+      var TIDY_ENABLED = msg.options.tidy
 
       if (RENAMING_ENABLED) cmdRename()
-      cmdTidy(X_SPACING, Y_SPACING)
-      cmdReorder()
+      if (REORDER_ENABLED)  cmdReorder()
+      if (TIDY_ENABLED)  cmdTidy(X_SPACING, Y_SPACING)
       figma.closePlugin();
     }
   }
