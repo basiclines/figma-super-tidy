@@ -143,8 +143,8 @@ if (CMD == 'options') {
       var TIDY_ENABLED = msg.options.tidy
 
       if (RENAMING_ENABLED) cmdRename()
-      if (REORDER_ENABLED)  cmdReorder()
-      if (TIDY_ENABLED)  cmdTidy(X_SPACING, Y_SPACING)
+      if (REORDER_ENABLED) cmdReorder()
+      if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
       figma.closePlugin();
     }
   }
