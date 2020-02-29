@@ -94,7 +94,7 @@ function cmdTidy(xSpacing, ySpacing) {
         yPos = col.y
       }
       var match = allNodes.find(node => node.id === col.id)
-      match.x = xPos + defaultXSpacing
+      match.x = (colidx == 0) ? xPos : xPos + defaultXSpacing;
       match.y = yPos
       xPos = match.x + match.width
     })
