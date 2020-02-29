@@ -47,8 +47,9 @@ function getNameByPosition(row, col) {
 }
 
 function cmdRename() {
-  var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
+  var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
+  var allNodes = parent.children
   var groupedNodes = getNodesGroupedbyPosition(selection)
 
   groupedNodes.forEach((row, rowidx) => {
@@ -61,21 +62,23 @@ function cmdRename() {
 }
 
 function cmdReorder() {
-  var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
+  var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
+  var allNodes = parent.children
   var groupedNodes = getNodesGroupedbyPosition(selection)
 
   groupedNodes.reverse().forEach(row => {
     row.columns.reverse().forEach(col => {
       var match = allNodes.find(node => node.id === col.id)
-      figma.currentPage.appendChild(match)
+      parent.appendChild(match)
     })
   })
 }
 
 function cmdTidy(xSpacing, ySpacing) {
-  var allNodes =  figma.currentPage.children
   var selection = figma.currentPage.selection
+  var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
+  var allNodes = parent.children
   var groupedNodes = getNodesGroupedbyPosition(selection)
 
   var x0 = 0
