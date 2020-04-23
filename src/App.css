@@ -60,15 +60,3 @@ root-ui[notready] { opacity: 0; pointer-events: none; }
 	overflow-y: auto;
 	padding: 16px;
 }
-
-/* PLUGIN UI */
-* { border: 0; padding: 0; margin: 0; }
-.hidden { display: none!important; }
-form { padding: 16px; }
-fieldset { margin-bottom: 0px; }
-p.type { margin-bottom: 16px; }
-p.type--11-pos-bold { margin-bottom: 8px; }
-.tidy-options { padding-left: 40px; margin-bottom: 24px; }
-.tidy-options input { width: 128px; }
-
-.button { margin-top: 16px; }

@@ -47,7 +47,7 @@ module.exports = (env, argv) => ({
 			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY)
 		}),
 		new HtmlWebpackPlugin({
-			template: path.resolve(__dirname, 'src/ui.html'),
+			templateContent: `<root-ui></root-ui>`,
 			filename: 'ui.html',
 			inlineSource: '.(js)$',
 			chunks: ['ui'],
