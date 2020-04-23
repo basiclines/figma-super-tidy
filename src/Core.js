@@ -1,3 +1,5 @@
+import Tracking from 'src/utils/Tracking'
+
 var CMD = figma.command
 
 function getNodesGroupedbyPosition(nodes) {
@@ -118,35 +120,62 @@ function cmdTidy(xSpacing, ySpacing) {
 	})
 }
 
-// Run with command
-if (CMD == 'rename') {
-	cmdRename()
-	figma.closePlugin();
-} else
-if (CMD == 'reorder') {
-	cmdReorder()
-	figma.closePlugin();
-} else
-if (CMD == 'tidy') {
-	cmdTidy()
-	figma.closePlugin();
-} else
-if (CMD == 'options') {
-	figma.showUI(__html__, { width: 320, height: 360 });
+// Obtain UUID then trigger init event
+figma.clientStorage.getAsync('UUID').then(data => {
+	let UUID = ''
 
-	figma.ui.onmessage = msg => {
-		if (msg.type === 'tidy') {
-			var X_SPACING = msg.options.spacing.x
-			var Y_SPACING = msg.options.spacing.y
-			var RENAMING_ENABLED = msg.options.renaming
-			var REORDER_ENABLED = msg.options.reorder
-			var TIDY_ENABLED = msg.options.tidy
+	if (!data) {
+		UUID = Tracking.createUUID()
+		figma.clientStorage.setAsync('UUID', UUID)
+	} else {
+		UUID = data
+	}
 
-			if (RENAMING_ENABLED) cmdRename()
-			if (REORDER_ENABLED) cmdReorder()
-			if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
-			figma.closePlugin();
+	Tracking.setup(WP_AMPLITUDE_KEY, UUID)
+
+	// Run with command
+	if (CMD == 'rename') {
+		Tracking.track('commandRename')
+		cmdRename()
+		setTimeout(() => figma.closePlugin(), 100)
+	} else
+	if (CMD == 'reorder') {
+		Tracking.track('commandReorder')
+		cmdReorder()
+		setTimeout(() => figma.closePlugin(), 100)
+	} else
+	if (CMD == 'tidy') {
+		Tracking.track('commandTidy')
+		cmdTidy()
+		setTimeout(() => figma.closePlugin(), 100)
+	} else
+	if (CMD == 'options') {
+		figma.showUI(__html__, { width: 320, height: 360 })
+		Tracking.track('openPlugin')
+
+		figma.ui.onmessage = msg => {
+			if (msg.type === 'tidy') {
+				var X_SPACING = msg.options.spacing.x
+				var Y_SPACING = msg.options.spacing.y
+				var RENAMING_ENABLED = msg.options.renaming
+				var REORDER_ENABLED = msg.options.reorder
+				var TIDY_ENABLED = msg.options.tidy
+
+				Tracking.track('clickApply', {
+					xSpacing: X_SPACING,
+					ySpacing: Y_SPACING,
+					renamingEnabled: RENAMING_ENABLED,
+					reorderEnabled: REORDER_ENABLED,
+					tidyEnabled: TIDY_ENABLED
+				})
+
+				if (RENAMING_ENABLED) cmdRename()
+				if (REORDER_ENABLED) cmdReorder()
+				if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
+				figma.closePlugin()
+			}
 		}
 	}
-}
+})
+
 
