@@ -1,9 +1,9 @@
 {
   "name": "Super Tidy",
-	"id": "731260060173130163",
+  "id": "731260060173130163",
   "api": "1.0.0",
-  "ui": "ui.html",
-  "main": "code.js",
+  "ui": "dist/ui.html",
+  "main": "dist/core.js",
 	"menu": [
 		{"name": "Rename", "command": "rename"},
 		{"name": "Reorder", "command": "reorder"},
