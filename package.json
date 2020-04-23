@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "dev": "npx webpack --mode=development --watch",
-    "build": "npx webpack --mode=production",
+    "dev": "NODE_ENV=development npx webpack --mode=development --watch",
+    "build": "NODE_ENV=production npx webpack --mode=production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

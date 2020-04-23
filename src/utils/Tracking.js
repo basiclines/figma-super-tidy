@@ -11,6 +11,7 @@ class Tracking {
 		this.userProps = {}
 		this.UUID = ''
 		this.UA = ''
+		this.hasSetup = false
 		this.parser = new UAParser()
 
 		if (!singleton) singleton = this
@@ -45,9 +46,11 @@ class Tracking {
 		this.apiKey = apiKey
 		this.UUID = UUID
 		this.UA = this.parser.getResult()
+		this.hasSetup = true
 	}
 
 	track(event, props) {
+		if (!this.hasSetup) return console.log('Missing Tracking.init(API_KEY, UUID) before Tracking.track()')
 		if (WP_ENV == 'development') return console.log(event, props || {})
 
 		let evtObj = {

@@ -1,6 +1,7 @@
 import Tracking from 'src/utils/Tracking'
 
-var CMD = figma.command
+const cmd = figma.command
+figma.showUI(__html__, { visible: false })
 
 function getNodesGroupedbyPosition(nodes) {
 	// Prepare nodes
@@ -131,27 +132,24 @@ figma.clientStorage.getAsync('UUID').then(data => {
 		UUID = data
 	}
 
-	Tracking.setup(WP_AMPLITUDE_KEY, UUID)
+	figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd })
 
 	// Run with command
-	if (CMD == 'rename') {
-		Tracking.track('commandRename')
+	if (cmd == 'rename') {
 		cmdRename()
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
-	if (CMD == 'reorder') {
-		Tracking.track('commandReorder')
+	if (cmd == 'reorder') {
 		cmdReorder()
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
-	if (CMD == 'tidy') {
-		Tracking.track('commandTidy')
+	if (cmd == 'tidy') {
 		cmdTidy()
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
-	if (CMD == 'options') {
+	if (cmd == 'options') {
 		figma.showUI(__html__, { width: 320, height: 360 })
-		Tracking.track('openPlugin')
+		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd })
 
 		figma.ui.onmessage = msg => {
 			if (msg.type === 'tidy') {
@@ -160,14 +158,6 @@ figma.clientStorage.getAsync('UUID').then(data => {
 				var RENAMING_ENABLED = msg.options.renaming
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
-
-				Tracking.track('clickApply', {
-					xSpacing: X_SPACING,
-					ySpacing: Y_SPACING,
-					renamingEnabled: RENAMING_ENABLED,
-					reorderEnabled: REORDER_ENABLED,
-					tidyEnabled: TIDY_ENABLED
-				})
 
 				if (RENAMING_ENABLED) cmdRename()
 				if (REORDER_ENABLED) cmdReorder()

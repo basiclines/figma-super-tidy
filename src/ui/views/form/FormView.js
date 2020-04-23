@@ -1,6 +1,7 @@
 import './FormView.css'
 
 import Element from 'leo/element'
+import Tracking from "src/utils/Tracking";
 class FormView extends Element {
 
 	bind() {
@@ -24,6 +25,12 @@ class FormView extends Element {
 				spacing: { x: parseInt(x_spacing.value), y: parseInt(y_spacing.value) }
 			}
 
+			let trackOptions = Object.assign({}, options)
+			delete trackOptions.spacing
+			trackOptions.xSpacing = options.spacing.x
+			trackOptions.ySpacing = options.spacing.y
+
+			Tracking.track('clickApply', trackOptions)
 			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
 		}
 
