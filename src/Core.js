@@ -150,6 +150,11 @@ figma.clientStorage.getAsync('UUID').then(data => {
 	if (cmd == 'options') {
 		figma.showUI(__html__, { width: 320, height: 360 })
 		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd })
+		figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
+
+		figma.on('selectionchange', () => {
+			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
+		})
 
 		figma.ui.onmessage = msg => {
 			if (msg.type === 'tidy') {

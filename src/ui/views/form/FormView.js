@@ -4,7 +4,25 @@ import Element from 'leo/element'
 import Tracking from "src/utils/Tracking";
 class FormView extends Element {
 
+	checkSelection(selection) {
+		if (selection.length == 0) {
+			this.find('[data-select=empty]').removeAttribute('hidden')
+			this.find('[data-select=form]').setAttribute('hidden', '')
+		} else {
+			this.find('[data-select=empty]').setAttribute('hidden', '')
+			this.find('[data-select=form]').removeAttribute('hidden')
+		}
+	}
+
 	bind() {
+		window.addEventListener('message', e => {
+			let msg = event.data.pluginMessage
+			if (msg.type == 'selection') {
+				let selection = event.data.pluginMessage.selection
+				this.checkSelection(selection)
+			}
+		})
+
 		// PLUGIN UI CONTROLS
 		var form = document.getElementById('form')
 		var renaming_check = document.getElementById('renaming_check')
@@ -46,21 +64,25 @@ class FormView extends Element {
 
 	render() {
 		return `
-		<form id="form">
+		<section class="empty-selection" data-select="empty" hidden>
+			<h1 class="type type--11-pos-bold">Empty selection</h1>
 			<p class="type type--11-pos-medium">
-				Super Tidy renames your frames and reorders them in the layers list by their position in the canvas.
+				Select some layers first to start using Super Tidy.
 			</p>
-			<p class="type type--11-pos-medium">
-				It also replicates the Figma Tidy feature so you can run it all at once: Rename, Reorder and Tidy.
-			</p>
-			
+		</section>
+		<form id="form" data-select="form" hidden>
 			<fieldset>
 				<label class="switch">
 					<div class="switch__container">
 						<input id="renaming_check" type="checkbox" class="switch__checkbox" checked>
 						<span class="switch__slider"></span>
 					</div>
-					<div class="switch__label">Renaming</div>
+					<div class="switch__label">
+						<strong>Renaming</strong>
+						<p class="type type--11-pos-normal">
+							Rename your layers based on their position on the canvas. <em>000, 001, ...</em>
+						</p>
+					</div>
 				</label>
 			</fieldset>
 			
@@ -70,7 +92,12 @@ class FormView extends Element {
 						<input id="reorder_check" type="checkbox" class="switch__checkbox" checked>
 						<span class="switch__slider"></span>
 					</div>
-					<div class="switch__label">Reorder</div>
+					<div class="switch__label">
+						<strong>Reorder</strong>
+						<p class="type type--11-pos-normal">
+							Reorder your layers on the sidebar based on their position on the canvas. 
+						</p>
+					</div>
 				</label>
 			</fieldset>
 			
@@ -80,7 +107,12 @@ class FormView extends Element {
 						<input id="tidy_check" type="checkbox" class="switch__checkbox" checked>
 						<span class="switch__slider"></span>
 					</div>
-					<div class="switch__label">Tidy</div>
+					<div class="switch__label">
+						<strong>Tidy</strong>
+						<p class="type type--11-pos-normal">
+							Align the layers on the canvas to a fixed spacing grid.
+						</p>
+					</div>
 				</label>
 				<section class="tidy-options" data-node="tidy-options">
 					<div class="input-icon">
