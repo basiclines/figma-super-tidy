@@ -18,7 +18,7 @@ function getNodesGroupedbyPosition(nodes) {
 	// Create rows and columns
 	var rows = []
 	input_ids.map(item => {
-		var rowExist = rows.find(row => row.y + item.height > item.y && row.y - item.height < item.y)
+		var rowExist = rows.find(row => row.y + item.height/2 > item.y && row.y - item.height/2 < item.y)
 		if (rowExist) {
 			rowExist.columns.push(item)
 		} else {
@@ -164,9 +164,9 @@ figma.clientStorage.getAsync('UUID').then(data => {
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
 
+				if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
 				if (RENAMING_ENABLED) cmdRename()
 				if (REORDER_ENABLED) cmdReorder()
-				if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
 				figma.closePlugin()
 			}
 		}
