@@ -119,13 +119,13 @@ class FormView extends Element {
 						<div class="input-icon__icon">
 							<div class="icon icon--text icon--black-3">X</div>
 						</div>
-						<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="100">
+						<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="${this.attrs.xspacing}">
 					</div>
 					<div class="input-icon">
 						<div class="input-icon__icon">
 							<div class="icon icon--text icon--black-3">Y</div>
 						</div>
-						<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="200">
+						<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="${this.attrs.yspacing}">
 					</div>
 				</section>
 			</fieldset>

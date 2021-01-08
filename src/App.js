@@ -12,6 +12,7 @@ class ui extends Element {
 		window.addEventListener('message', e => {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'init') {
+				this.data.spacing = msg.spacing
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
@@ -19,8 +20,9 @@ class ui extends Element {
 	}
 
 	render() {
+		if (!this.data.spacing) return '';
 		return`
-			<v-form></v-form>
+			<v-form xspacing="${this.data.spacing.x}" yspacing="${this.data.spacing.y}"></v-form>
 		`
 	}
 }

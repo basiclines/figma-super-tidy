@@ -88,8 +88,6 @@ function cmdTidy(xSpacing, ySpacing) {
 	var y0 = 0
 	var xPos = 0
 	var yPos = 0
-	var defaultXSpacing = (typeof xSpacing == 'undefined') ? 100 : xSpacing ;
-	var defaultYSpacing = (typeof ySpacing == 'undefined') ? 200 : ySpacing ;
 	var tallestInRow = []
 
 	// Store tallest node per row
@@ -111,13 +109,13 @@ function cmdTidy(xSpacing, ySpacing) {
 				yPos = col.y
 			}
 			var match = allNodes.find(node => node.id === col.id)
-			match.x = (colidx == 0) ? xPos : xPos + defaultXSpacing;
+			match.x = (colidx == 0) ? xPos : xPos + xSpacing;
 			match.y = yPos
 			xPos = match.x + match.width
 		})
 
 		xPos = x0
-		yPos = yPos + (tallestInRow[rowidx] + defaultYSpacing)
+		yPos = yPos + (tallestInRow[rowidx] + ySpacing)
 	})
 }
 
@@ -131,52 +129,60 @@ figma.clientStorage.getAsync('UUID').then(data => {
 	} else {
 		UUID = data
 	}
-
-	figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd })
-
-	// Run with command
-	if (cmd == 'rename') {
-		cmdRename()
-		setTimeout(() => figma.closePlugin(), 100)
-	} else
-	if (cmd == 'reorder') {
-		cmdReorder()
-		setTimeout(() => figma.closePlugin(), 100)
-	} else
-	if (cmd == 'tidy') {
-		cmdTidy()
-		setTimeout(() => figma.closePlugin(), 100)
-	} else
-	if (cmd == 'all') {
-		cmdTidy()
-		cmdReorder()
-		cmdRename()
-		setTimeout(() => figma.closePlugin(), 100)
-	} else
-	if (cmd == 'options') {
-		figma.showUI(__html__, { width: 320, height: 360 })
-		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd })
-		figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
-
-		figma.on('selectionchange', () => {
+	
+	
+	figma.clientStorage.getAsync('spacing').then(spacing => { 
+		
+		// Prepare defaults
+		var xSpacing = (typeof spacing == 'undefined') ? 100 : spacing.x;
+		var ySpacing = (typeof spacing == 'undefined') ? 200 : spacing.y;
+		
+		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, spacing: { x: xSpacing, y: ySpacing } })
+	
+		// Run with command
+		if (cmd == 'rename') {
+			cmdRename()
+			setTimeout(() => figma.closePlugin(), 100)
+		} else
+		if (cmd == 'reorder') {
+			cmdReorder()
+			setTimeout(() => figma.closePlugin(), 100)
+		} else
+		if (cmd == 'tidy') {
+			cmdTidy(xSpacing, ySpacing)
+			setTimeout(() => figma.closePlugin(), 100)
+		} else
+		if (cmd == 'all') {
+			cmdTidy(xSpacing, ySpacing)
+			cmdReorder()
+			cmdRename()
+			setTimeout(() => figma.closePlugin(), 100)
+		} else
+		if (cmd == 'options') {
+			figma.showUI(__html__, { width: 320, height: 360 })
+			figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, spacing: { x: xSpacing, y: ySpacing } })
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
-		})
-
-		figma.ui.onmessage = msg => {
-			if (msg.type === 'tidy') {
-				var X_SPACING = msg.options.spacing.x
-				var Y_SPACING = msg.options.spacing.y
-				var RENAMING_ENABLED = msg.options.renaming
-				var REORDER_ENABLED = msg.options.reorder
-				var TIDY_ENABLED = msg.options.tidy
-
-				if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
-				if (RENAMING_ENABLED) cmdRename()
-				if (REORDER_ENABLED) cmdReorder()
-				figma.closePlugin()
+	
+			figma.on('selectionchange', () => {
+				figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
+			})
+	
+			figma.ui.onmessage = msg => {
+				if (msg.type === 'tidy') {
+					var X_SPACING = msg.options.spacing.x
+					var Y_SPACING = msg.options.spacing.y
+					var RENAMING_ENABLED = msg.options.renaming
+					var REORDER_ENABLED = msg.options.reorder
+					var TIDY_ENABLED = msg.options.tidy
+					
+					figma.clientStorage.setAsync('spacing', { x: X_SPACING, y: Y_SPACING })
+	
+					if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
+					if (RENAMING_ENABLED) cmdRename()
+					if (REORDER_ENABLED) cmdReorder()
+					figma.closePlugin()
+				}
 			}
 		}
-	}
+	})
 })
-
-
