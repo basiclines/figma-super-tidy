@@ -8,7 +8,8 @@
 		{"name": "Rename", "command": "rename"},
 		{"name": "Reorder", "command": "reorder"},
 		{"name": "Tidy", "command": "tidy"},
+		{"name": "Run all", "command": "all"},
 		{"separator": true},
-		{"name": "Run all...", "command": "options"}
+		{"name": "Run custom...", "command": "options"}
 	]
 }
