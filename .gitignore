@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.nova
 secrets.json
 node_modules/
 dist/
