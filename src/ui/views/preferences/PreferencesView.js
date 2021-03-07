@@ -23,7 +23,7 @@ class PreferencesView extends Element {
 							<div class="input-icon__icon">
 								<div class="icon icon--distribute-horizontal-spacing"></div>
 							</div>
-							<input id="x_spacing" type="number" class="input-icon__input" step="1" value="${this.attrs.xspacing}">
+							<input id="x_spacing" required type="number" class="input-icon__input" step="1" value="${this.attrs.xspacing}">
 						</div>
 					</label>
 					
@@ -32,20 +32,20 @@ class PreferencesView extends Element {
 							<div class="input-icon__icon">
 								<div class="icon icon--distribute-vertical-spacing"></div>
 							</div>
-							<input id="y_spacing" type="number" class="input-icon__input" step="1" value="${this.attrs.yspacing}">
+							<input id="y_spacing" required type="number" class="input-icon__input" step="1" value="${this.attrs.yspacing}">
 						</div>
 					</label>
 				</fieldset>
 				
 				<label>
 					<strong>Starting frame number</strong>
-					<p>Renames your frames starting from this number when using the Rename action.</p>
+					<p>Renames your frames starting from the given number when using the Rename action.</p>
 					
 					<div class="input-icon">
 						<div class="input-icon__icon">
 							<div class="icon icon--frame"></div>
 						</div>
-						<input id="starting_name" type="number" class="input-icon__input" step="1" value="${'VALUE'}">
+						<input id="starting_name" required type="number" class="input-icon__input" step="1" value="${'VALUE'}">
 					</div>
 				</label>
 				
