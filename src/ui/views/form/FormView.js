@@ -30,8 +30,6 @@ class FormView extends Element {
 		var renaming_check = document.getElementById('renaming_check')
 		var reorder_check = document.getElementById('reorder_check')
 		var tidy_check = document.getElementById('tidy_check')
-		var x_spacing = document.getElementById('x_spacing')
-		var y_spacing = document.getElementById('y_spacing')
 		var tidy = document.getElementById('tidy')
 
 		function applySuperTidy() {
@@ -42,15 +40,9 @@ class FormView extends Element {
 				renaming: renamingEnabled,
 				reorder: reorderEnabled,
 				tidy: tidyEnabled,
-				spacing: { x: parseInt(x_spacing.value), y: parseInt(y_spacing.value) }
 			}
 
-			let trackOptions = Object.assign({}, options)
-			delete trackOptions.spacing
-			trackOptions.xSpacing = options.spacing.x
-			trackOptions.ySpacing = options.spacing.y
-
-			Tracking.track('clickApply', trackOptions)
+			Tracking.track('clickApply', options)
 			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
 		}
 
