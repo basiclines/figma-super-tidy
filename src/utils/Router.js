@@ -5,7 +5,6 @@ class Router extends LEOObject {
 	constructor() {
 		super()
 		this.url = window.location.hash
-		this.history = []
 		this.routes = {}
 		this.bind()
 
@@ -15,18 +14,24 @@ class Router extends LEOObject {
 
 	get root() { return '' }
 
+	setup(routes) {
+		this.routes = routes
+	}
+
 	updateURLBar(url) {
 		window.location.hash = url
 	}
 
-	appendToHistory(url) {
-		this.history.push(url)
+	reload() {
+		this.trigger('change:url', this.url)
 	}
 
 	navigate(url) {
-		this.appendToHistory(url)
 		this.updateURLBar(url)
-		this.url = url
+	}
+
+	back() {
+		window.history.back()
 	}
 
 	bind() {

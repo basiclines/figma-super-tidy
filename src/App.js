@@ -3,8 +3,12 @@ import 'src/App.css'
 import 'src/ui/FigmaUI.css'
 
 import Tracking from 'src/utils/Tracking'
-import 'src/ui/views/form/FormView'
+import Router from 'src/utils/Router'
 import Element from 'src/ui/Element'
+
+import 'src/ui/views/form/FormView'
+import 'src/ui/components/toolbar/ToolbarComponent'
+
 
 class ui extends Element {
 
@@ -17,11 +21,17 @@ class ui extends Element {
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
 		})
+		
+		Router.setup({
+			index: '#index',
+			preferences: '#preferences'
+		})
 	}
 
 	render() {
 		if (!this.data.spacing) return '';
 		return`
+			<c-toolbar></c-toolbar>
 			<v-form xspacing="${this.data.spacing.x}" yspacing="${this.data.spacing.y}"></v-form>
 		`
 	}

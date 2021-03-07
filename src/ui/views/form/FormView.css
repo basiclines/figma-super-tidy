@@ -5,8 +5,9 @@ form { padding: 16px; }
 fieldset { margin-bottom: 0px; }
 p.type { margin-bottom: 16px; }
 p.type--11-pos-bold { margin-bottom: 8px; }
-.tidy-options { padding-left: 40px; margin-bottom: 24px; }
-.tidy-options input { width: 128px; }
+
+.extra-options { padding-left: 40px; margin-bottom: 24px; }
+.extra-options input { width: 128px; }
 
 .button { margin-top: 16px; }
 
@@ -14,3 +15,12 @@ v-form .switch .switch__container { flex-shrink: 0; align-self: flex-start; marg
 v-form .switch__label p { color: var(--color-text-secondary); }
 v-form .empty-selection { text-align: center; padding: 32px 24px; }
 v-form .empty-selection h1 { margin-bottom: 8px; }
+
+.show-preferences { margin: -4px; }
+.show-preferences a { display: block; border-radius: 4px; padding: 8px; border: solid 2px transparent; }
+.show-preferences a:hover { background: var(--color-decorator-soft); text-decoration: none; }
+.show-preferences a:active { border-color: var(--color-interactive-positive); }
+.show-preferences .icon { display: block; float: left; margin-right: 12px; }
+.show-preferences h1, .show-preferences p { overflow: hidden; }
+.show-preferences h1 { font: var(--type-small-bold); color: var(--color-text-primary); }
+.show-preferences p { font: var(--type-small-normal); color: var(--color-text-secondary); margin: 0; }

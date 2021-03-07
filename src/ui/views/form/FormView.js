@@ -1,7 +1,9 @@
 import './FormView.css'
 
-import Element from 'leo/element'
-import Tracking from "src/utils/Tracking";
+import Element from 'src/ui/Element'
+import Tracking from "src/utils/Tracking"
+import Router from 'src/utils/Router'
+
 class FormView extends Element {
 
 	checkSelection(selection) {
@@ -114,21 +116,8 @@ class FormView extends Element {
 						</p>
 					</div>
 				</label>
-				<section class="tidy-options" data-node="tidy-options">
-					<div class="input-icon">
-						<div class="input-icon__icon">
-							<div class="icon icon--text icon--black-3">X</div>
-						</div>
-						<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="${this.attrs.xspacing}">
-					</div>
-					<div class="input-icon">
-						<div class="input-icon__icon">
-							<div class="icon icon--text icon--black-3">Y</div>
-						</div>
-						<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="${this.attrs.yspacing}">
-					</div>
-				</section>
 			</fieldset>
+			
 			<button type="submit" id="tidy" class="button button--primary">Apply</button>
 		</form>
 		`
