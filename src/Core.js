@@ -139,26 +139,31 @@ figma.clientStorage.getAsync('UUID').then(data => {
 		
 		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, spacing: { x: xSpacing, y: ySpacing } })
 	
-		// Run with command
+		// Command triggered by user
 		if (cmd == 'rename') {
+			// RUNS WITHOUT UI
 			cmdRename()
 			setTimeout(() => figma.closePlugin(), 100)
 		} else
 		if (cmd == 'reorder') {
+			// RUNS WITHOUT UI
 			cmdReorder()
 			setTimeout(() => figma.closePlugin(), 100)
 		} else
 		if (cmd == 'tidy') {
+			// RUNS WITHOUT UI
 			cmdTidy(xSpacing, ySpacing)
 			setTimeout(() => figma.closePlugin(), 100)
 		} else
 		if (cmd == 'all') {
+			// RUNS WITHOUT UI
 			cmdTidy(xSpacing, ySpacing)
 			cmdReorder()
 			cmdRename()
 			setTimeout(() => figma.closePlugin(), 100)
 		} else
 		if (cmd == 'options') {
+			// OPEN UI
 			figma.showUI(__html__, { width: 320, height: 360 })
 			figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, spacing: { x: xSpacing, y: ySpacing } })
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
@@ -169,18 +174,19 @@ figma.clientStorage.getAsync('UUID').then(data => {
 	
 			figma.ui.onmessage = msg => {
 				if (msg.type === 'tidy') {
-					var X_SPACING = msg.options.spacing.x
-					var Y_SPACING = msg.options.spacing.y
 					var RENAMING_ENABLED = msg.options.renaming
 					var REORDER_ENABLED = msg.options.reorder
 					var TIDY_ENABLED = msg.options.tidy
-					
-					figma.clientStorage.setAsync('spacing', { x: X_SPACING, y: Y_SPACING })
 	
-					if (TIDY_ENABLED) cmdTidy(X_SPACING, Y_SPACING)
+					if (TIDY_ENABLED) cmdTidy(xSpacing, ySpacing)
 					if (RENAMING_ENABLED) cmdRename()
 					if (REORDER_ENABLED) cmdReorder()
 					figma.closePlugin()
+				} else
+				if (msg.type === 'save-preferences') {
+					let preferences = msg.options.preferences
+					figma.clientStorage.setAsync('preferences', preferences)
+					// figma.clientStorage.setAsync('spacing', { x: X_SPACING, y: Y_SPACING })
 				}
 			}
 		}
