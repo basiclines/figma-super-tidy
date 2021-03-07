@@ -164,7 +164,7 @@ figma.clientStorage.getAsync('UUID').then(data => {
 		} else
 		if (cmd == 'options') {
 			// OPEN UI
-			figma.showUI(__html__, { width: 320, height: 360 })
+			figma.showUI(__html__, { width: 320, height: 460 })
 			figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, spacing: { x: xSpacing, y: ySpacing } })
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 	

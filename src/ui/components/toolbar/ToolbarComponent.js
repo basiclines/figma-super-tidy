@@ -26,7 +26,7 @@ class ToolbarComponent extends Element {
 		return`
 			<nav data-select="view">
 				<ul data-select="nav">
-					<li class="${(isIndex) ? 'active' : ''}"><a href="${Router.routes.index}">Run</a></li>
+					<li class="${(isIndex) ? 'active' : ''}"><a href="${Router.routes.index}">Actions</a></li>
 					<li class="${(isPreferences) ? 'active' : ''}"><a href="${Router.routes.preferences}">Preferences</a></li>
 				</ul>
 			</nav>

@@ -11,8 +11,6 @@ p.type--11-pos-bold { margin-bottom: 8px; }
 
 .button { margin-top: 16px; }
 
-v-form .switch .switch__container { flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
-v-form .switch__label p { color: var(--color-text-secondary); }
 v-form .empty-selection { text-align: center; padding: 32px 24px; }
 v-form .empty-selection h1 { margin-bottom: 8px; }
 

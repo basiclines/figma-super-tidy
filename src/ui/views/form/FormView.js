@@ -110,7 +110,7 @@ class FormView extends Element {
 				</label>
 			</fieldset>
 			
-			<button type="submit" id="tidy" class="button button--primary">Apply</button>
+			<button type="submit" id="tidy" class="button button--primary">Run</button>
 		</form>
 		`
 	}
