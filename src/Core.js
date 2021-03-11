@@ -132,7 +132,7 @@ Promise.all([
 	let spacing = values[2]
 	
 	let SPACING = { x: 100, y: 200 }
-	let START_NAME = 0
+	let START_NAME = '000'
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
 	let PREFERENCES = {
@@ -161,16 +161,19 @@ Promise.all([
 	if (cmd == 'rename') {
 		// RUNS WITHOUT UI
 		cmdRename()
+		figma.notify('Super Tidy: Rename')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'reorder') {
 		// RUNS WITHOUT UI
 		cmdReorder()
+		figma.notify('Super Tidy: Reorder')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'tidy') {
 		// RUNS WITHOUT UI
 		cmdTidy(preferences.spacing.x, preferences.spacing.y)
+		figma.notify('Super Tidy: Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'all') {
@@ -178,6 +181,7 @@ Promise.all([
 		cmdTidy(preferences.spacing.x, preferences.spacing.y)
 		cmdReorder()
 		cmdRename()
+		figma.notify('Super Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'options') {
@@ -199,12 +203,13 @@ Promise.all([
 				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y)
 				if (RENAMING_ENABLED) cmdRename()
 				if (REORDER_ENABLED) cmdReorder()
+				figma.notify('Super Tidy')
 				figma.closePlugin()
 			} else
-			if (msg.type === 'save-preferences') {
-				let preferences = msg.options.preferences
+			if (msg.type === 'preferences') {
+				preferences = msg.preferences
 				figma.clientStorage.setAsync('preferences', preferences)
-				// figma.clientStorage.setAsync('spacing', { x: X_SPACING, y: Y_SPACING })
+				figma.notify('Preferences saved')
 			}
 		}
 	}

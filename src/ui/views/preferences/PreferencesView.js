@@ -2,18 +2,39 @@ import './PreferencesView.css'
 
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
+import Router from 'src/utils/Router'
 
 import 'src/ui/components/select/SelectComponent'
 
 class PreferencesView extends Element {
 
-	bind() {
+	savePreferences() {
+		let x_spacing = this.find('#x_spacing').value
+		let y_spacing = this.find('#y_spacing').value
+		let starting_name = this.find('#starting_name').value
+		let rename_trategy = this.find('#rename_strategy [selected]').getAttribute('data-value')
 		
+		let preferences = {
+			spacing: { x: parseInt(x_spacing), y: parseInt(y_spacing) },
+			start_name: starting_name,
+			rename_strategy: rename_trategy
+		}
+		
+		Tracking.track('clickSavePreferences', preferences)
+		parent.postMessage({ pluginMessage: { type: 'preferences', preferences: preferences } }, '*')
+		Router.navigate(Router.routes.index)
+	}
+	
+	bind(e) {
+		this.find('#preferences').addEventListener('submit', e => {
+			this.savePreferences()
+			e.preventDefault()
+		})
 	}
 
 	render() {
 		return `
-			<form action="#">
+			<form id="preferences" action="#">
 				<fieldset>		
 					<strong>Grid spacing</strong>
 					<p>Spacing between frames applied when running the Tidy action.</p>
@@ -52,11 +73,11 @@ class PreferencesView extends Element {
 				<div class="fake-label">
 					<strong>Rename strategy</strong>
 					<p>Merges or replaces your frame names with numbers based on their position on the canvas. Applied with the Rename action.</p>
-					<c-select>
-						<option data-value="replace" ${(this.attrs.renamestrategy == 'replace') ? 'selected' : ''}>
+					<c-select id="rename_strategy">
+						<option value="replace" ${(this.attrs.renamestrategy == 'replace') ? 'selected' : ''}>
 							Replace
 						</option>
-						<option data-value="merge" ${(this.attrs.renamestrategy == 'merge') ? 'selected' : ''}>
+						<option value="merge" ${(this.attrs.renamestrategy == 'merge') ? 'selected' : ''}>
 							Merge
 						</option>
 					</c-select>

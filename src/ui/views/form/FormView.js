@@ -6,7 +6,7 @@ import Router from 'src/utils/Router'
 
 class FormView extends Element {
 
-	checkSelection(selection) {
+	handleEmptyState(selection) {
 		if (selection.length == 0) {
 			this.find('[data-select=empty]').removeAttribute('hidden')
 			this.find('[data-select=form]').setAttribute('hidden', '')
@@ -21,7 +21,7 @@ class FormView extends Element {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'selection') {
 				let selection = event.data.pluginMessage.selection
-				this.checkSelection(selection)
+				this.handleEmptyState(selection)
 			}
 		})
 
@@ -46,9 +46,6 @@ class FormView extends Element {
 			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
 		}
 
-		tidy_check.onchange = e => {
-			document.querySelector('[data-node="tidy-options"]').classList.toggle('hidden')
-		}
 
 		form.onsubmit = (e) => {
 			applySuperTidy()
