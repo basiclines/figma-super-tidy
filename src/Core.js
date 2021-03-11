@@ -49,7 +49,7 @@ function getNameByPosition(row, col) {
 	return name
 }
 
-function cmdRename() {
+function cmdRename(renameStrategy, startName) {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
@@ -59,7 +59,13 @@ function cmdRename() {
 		row.columns.forEach((col, colidx) => {
 			var name = getNameByPosition(rowidx, colidx)
 			var match = allNodes.find(node => node.id === col.id)
-			match.name = name
+			
+			if (renameStrategy == 'merge') {
+				match.name = `${name}_${match.name}`
+			} else
+			if (renameStrategy == 'replace') {
+				match.name = name
+			}
 		})
 	})
 }
@@ -160,7 +166,7 @@ Promise.all([
 	// Command triggered by user
 	if (cmd == 'rename') {
 		// RUNS WITHOUT UI
-		cmdRename()
+		cmdRename(preferences.rename_strategy, preferences.start_name)
 		figma.notify('Super Tidy: Rename')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
@@ -180,7 +186,7 @@ Promise.all([
 		// RUNS WITHOUT UI
 		cmdTidy(preferences.spacing.x, preferences.spacing.y)
 		cmdReorder()
-		cmdRename()
+		cmdRename(preferences.rename_strategy, preferences.start_name)
 		figma.notify('Super Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
@@ -201,7 +207,7 @@ Promise.all([
 				var TIDY_ENABLED = msg.options.tidy
 
 				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y)
-				if (RENAMING_ENABLED) cmdRename()
+				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name)
 				if (REORDER_ENABLED) cmdReorder()
 				figma.notify('Super Tidy')
 				figma.closePlugin()
