@@ -17,7 +17,8 @@ class ui extends Element {
 		window.addEventListener('message', e => {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'init') {
-				this.data.spacing = msg.spacing
+				this.data.preferences = msg.preferences
+				console.log('preferences', this.data.preferences)
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
@@ -40,13 +41,16 @@ class ui extends Element {
 	}
 
 	render() {
-		if (!this.data.spacing) return '';
+		if (!this.data.preferences) return '';
 		return`
 			<c-toolbar></c-toolbar>
 			<v-form data-view="index"></v-form>
 			<v-preferences class="hidden" data-view="preferences"
-				xspacing="${this.data.spacing.x}"
-				yspacing="${this.data.spacing.y}">
+				xspacing="${this.data.preferences.spacing.x}"
+				yspacing="${this.data.preferences.spacing.y}"
+				startname="${this.data.preferences.start_name}"
+				renamestrategy="${this.data.preferences.rename_strategy}"
+			>
 			</v-form>
 		`
 	}

@@ -45,7 +45,7 @@ class PreferencesView extends Element {
 						<div class="input-icon__icon">
 							<div class="icon icon--frame"></div>
 						</div>
-						<input id="starting_name" required type="number" class="input-icon__input" step="1" value="${'VALUE'}">
+						<input id="starting_name" required type="number" class="input-icon__input" step="1" value="${this.attrs.startname}">
 					</div>
 				</label>
 				
@@ -53,8 +53,12 @@ class PreferencesView extends Element {
 					<strong>Rename strategy</strong>
 					<p>Merges or replaces your frame names with numbers based on their position on the canvas. Applied with the Rename action.</p>
 					<c-select>
-						<option selected>Replace</option>
-						<option>Merge</option>
+						<option data-value="replace" ${(this.attrs.renamestrategy == 'replace') ? 'selected' : ''}>
+							Replace
+						</option>
+						<option data-value="merge" ${(this.attrs.renamestrategy == 'merge') ? 'selected' : ''}>
+							Merge
+						</option>
 					</c-select>
 				</div>
 				
