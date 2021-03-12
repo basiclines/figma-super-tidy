@@ -30,9 +30,12 @@ function getNodesGroupedbyPosition(nodes) {
 	return rows.sort((current, next) => current.y - next.y);
 }
 
-function getNameByPosition(row, col) {
-	var row_name = row*100
-	var col_name = row_name + col
+function getNameByPosition(row, col, startName) {
+	
+	var padLength = startName.length
+	var parseStartName = parseInt(startName)
+	var rowName = parseStartName + row * Math.pow(10, padLength - 1)
+	var colName = rowName + col
 	var name = ''
 
 	function zeroPad(num, places) {
@@ -41,9 +44,9 @@ function getNameByPosition(row, col) {
 	}
 
 	if (col == 0) {
-		name = (row == 0) ? zeroPad(row_name, 3) : row_name.toString();
+		name = (row == 0) ? zeroPad(rowName, padLength) : rowName.toString();
 	} else {
-		name = (row == 0) ? zeroPad(col_name, 3) : col_name.toString();
+		name = (row == 0) ? zeroPad(colName, padLength) : colName.toString();
 	}
 
 	return name
@@ -57,7 +60,7 @@ function cmdRename(renameStrategy, startName) {
 
 	groupedNodes.forEach((row, rowidx) => {
 		row.columns.forEach((col, colidx) => {
-			var name = getNameByPosition(rowidx, colidx)
+			var name = getNameByPosition(rowidx, colidx, startName)
 			var match = allNodes.find(node => node.id === col.id)
 			
 			if (renameStrategy == 'merge') {
