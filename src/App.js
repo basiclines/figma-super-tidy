@@ -18,7 +18,6 @@ class ui extends Element {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'init') {
 				this.data.preferences = msg.preferences
-				console.log('preferences', this.data.preferences)
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
