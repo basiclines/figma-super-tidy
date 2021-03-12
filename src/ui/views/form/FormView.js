@@ -26,7 +26,7 @@ class FormView extends Element {
 		})
 
 		// PLUGIN UI CONTROLS
-		var form = document.getElementById('form')
+		var form = document.getElementById('actions')
 		var renaming_check = document.getElementById('renaming_check')
 		var reorder_check = document.getElementById('reorder_check')
 		var tidy_check = document.getElementById('tidy_check')
@@ -61,7 +61,7 @@ class FormView extends Element {
 				Select some layers first to start using Super Tidy.
 			</p>
 		</section>
-		<form id="form" data-select="form" hidden>
+		<form id="actions" data-select="form" hidden>
 			<fieldset>
 				<label class="switch">
 					<div class="switch__container">

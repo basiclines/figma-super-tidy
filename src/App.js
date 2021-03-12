@@ -36,16 +36,16 @@ class ui extends Element {
 	
 	showActiveView(url) {
 		let view = url.replace('#', '')
-		this.findAll('[data-view]').forEach(view => view.classList.add('hidden'))
-		this.find(`[data-view="${view}"]`).classList.remove('hidden')
+		this.findAll('[data-view]').forEach(view => view.setAttribute('hidden', ''))
+		this.find(`[data-view="${view}"]`).removeAttribute('hidden')
 	}
 
 	render() {
 		if (!this.data.preferences) return '';
 		return`
 			<c-toolbar></c-toolbar>
-			<v-form data-view="index"></v-form>
-			<v-preferences class="hidden" data-view="preferences"
+			<v-form data-view="index" class="view"></v-form>
+			<v-preferences class="view" hidden data-view="preferences"
 				xspacing="${this.data.preferences.spacing.x}"
 				yspacing="${this.data.preferences.spacing.y}"
 				startname="${this.data.preferences.start_name}"

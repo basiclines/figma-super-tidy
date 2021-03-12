@@ -69,7 +69,6 @@ root-ui[notready] { opacity: 0; pointer-events: none; }
 	right: 0;
 	bottom: 0;
 	overflow-y: auto;
-	padding: 16px;
 }
 
 .switch .switch__container { flex-shrink: 0; align-self: flex-start; margin-top: 4px; }

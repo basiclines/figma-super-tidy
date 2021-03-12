@@ -11,8 +11,19 @@ p.type--11-pos-bold { margin-bottom: 8px; }
 
 .button { margin-top: 16px; }
 
-v-form .empty-selection { text-align: center; padding: 32px 24px; }
+v-form .empty-selection {
+	text-align: center;
+	padding: 0 24px;
+	text-align: center;
+	padding: 0 24px;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	justify-content: center;
+}
 v-form .empty-selection h1 { margin-bottom: 8px; }
+
+
 
 .show-preferences { margin: -4px; }
 .show-preferences a { display: block; border-radius: 4px; padding: 8px; border: solid 2px transparent; }
