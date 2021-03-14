@@ -1,10 +1,12 @@
 import './FormView.css'
 
-import Element from 'leo/element'
-import Tracking from "src/utils/Tracking";
+import Element from 'src/ui/Element'
+import Tracking from "src/utils/Tracking"
+import Router from 'src/utils/Router'
+
 class FormView extends Element {
 
-	checkSelection(selection) {
+	handleEmptyState(selection) {
 		if (selection.length == 0) {
 			this.find('[data-select=empty]').removeAttribute('hidden')
 			this.find('[data-select=form]').setAttribute('hidden', '')
@@ -19,17 +21,15 @@ class FormView extends Element {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'selection') {
 				let selection = event.data.pluginMessage.selection
-				this.checkSelection(selection)
+				this.handleEmptyState(selection)
 			}
 		})
 
 		// PLUGIN UI CONTROLS
-		var form = document.getElementById('form')
+		var form = document.getElementById('actions')
 		var renaming_check = document.getElementById('renaming_check')
 		var reorder_check = document.getElementById('reorder_check')
 		var tidy_check = document.getElementById('tidy_check')
-		var x_spacing = document.getElementById('x_spacing')
-		var y_spacing = document.getElementById('y_spacing')
 		var tidy = document.getElementById('tidy')
 
 		function applySuperTidy() {
@@ -40,21 +40,12 @@ class FormView extends Element {
 				renaming: renamingEnabled,
 				reorder: reorderEnabled,
 				tidy: tidyEnabled,
-				spacing: { x: parseInt(x_spacing.value), y: parseInt(y_spacing.value) }
 			}
 
-			let trackOptions = Object.assign({}, options)
-			delete trackOptions.spacing
-			trackOptions.xSpacing = options.spacing.x
-			trackOptions.ySpacing = options.spacing.y
-
-			Tracking.track('clickApply', trackOptions)
+			Tracking.track('clickApply', options)
 			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
 		}
 
-		tidy_check.onchange = e => {
-			document.querySelector('[data-node="tidy-options"]').classList.toggle('hidden')
-		}
 
 		form.onsubmit = (e) => {
 			applySuperTidy()
@@ -70,7 +61,7 @@ class FormView extends Element {
 				Select some layers first to start using Super Tidy.
 			</p>
 		</section>
-		<form id="form" data-select="form" hidden>
+		<form id="actions" data-select="form" hidden>
 			<fieldset>
 				<label class="switch">
 					<div class="switch__container">
@@ -114,22 +105,9 @@ class FormView extends Element {
 						</p>
 					</div>
 				</label>
-				<section class="tidy-options" data-node="tidy-options">
-					<div class="input-icon">
-						<div class="input-icon__icon">
-							<div class="icon icon--text icon--black-3">X</div>
-						</div>
-						<input id="x_spacing" type="number" class="input-icon__input" placeholder="Horizontal" step="1" value="${this.attrs.xspacing}">
-					</div>
-					<div class="input-icon">
-						<div class="input-icon__icon">
-							<div class="icon icon--text icon--black-3">Y</div>
-						</div>
-						<input id="y_spacing" type="number" class="input-icon__input" placeholder="Vertical" step="1" value="${this.attrs.yspacing}">
-					</div>
-				</section>
 			</fieldset>
-			<button type="submit" id="tidy" class="button button--primary">Apply</button>
+			
+			<button type="submit" id="tidy" class="button button--primary">Run</button>
 		</form>
 		`
 	}

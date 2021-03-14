@@ -50,6 +50,17 @@ body { text-align: left; }
 root-ui { transition: opacity 0.05s linear; display: block; }
 root-ui[notready] { opacity: 0; pointer-events: none; }
 
+.c-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+	pointer-events: none;
+}
+.c-icon img { width: 100%; height: 100%; }
+
 .view {
 	display: block;
 	position: absolute;
@@ -58,5 +69,7 @@ root-ui[notready] { opacity: 0; pointer-events: none; }
 	right: 0;
 	bottom: 0;
 	overflow-y: auto;
-	padding: 16px;
 }
+
+.switch .switch__container { flex-shrink: 0; align-self: flex-start; margin-top: 4px; }
+.switch__label p { color: var(--color-text-secondary); }

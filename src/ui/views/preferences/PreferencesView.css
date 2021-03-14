@@ -1,0 +1,13 @@
+v-preferences {}
+v-preferences form strong { font: var(--type-small-bold); color: var(--color-text-primary); display: block; margin-bottom: 4px; }
+v-preferences form p { font: var(--type-small-normal); color: var(--color-text-secondary); display: block; margin-bottom: 4px; }
+v-preferences label, v-preferences .fake-label { margin-bottom: 16px; display: block; }
+v-preferences label .input-icon { width: 88px; }
+
+v-preferences fieldset { overflow: hidden; padding: 2px; }
+v-preferences fieldset label { float: left }
+v-preferences .button.button--primary { margin-top: 0; }
+
+
+
+
