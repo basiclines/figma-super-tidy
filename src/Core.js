@@ -117,10 +117,26 @@ function cmdTidy(xSpacing, ySpacing) {
 				xPos = col.x
 				yPos = col.y
 			}
-			var match = allNodes.find(node => node.id === col.id)
-			match.x = (colidx == 0) ? xPos : xPos + xSpacing;
-			match.y = yPos
-			xPos = match.x + match.width
+			var match = allNodes.find(node => node.id === col.id)	
+			var newXPos =	(colidx == 0) ? xPos : xPos + xSpacing;
+			var newYPos = yPos
+			
+			// Wrap instances with a frame around
+			if (match.type == 'INSTANCE') {
+				var instanceParent = figma.createFrame()
+				instanceParent.x = newXPos
+				instanceParent.y = newYPos
+				instanceParent.resize(match.width, match.height)
+				instanceParent.appendChild(match)
+				match.x = 0
+				match.y = 0
+				figma.currentPage.selection = selection.concat(instanceParent)
+			} else {
+				match.x = newXPos
+				match.y = newYPos
+			}
+				
+			xPos = newXPos + match.width
 		})
 
 		xPos = x0
@@ -128,9 +144,7 @@ function cmdTidy(xSpacing, ySpacing) {
 	})
 }
 
-// Obtain UUID then trigger init event
-
-// Obtain UUID and saved file url then trigger init event
+// Obtain UUID and preferences then trigger init event
 Promise.all([
 	figma.clientStorage.getAsync('UUID'),
 	figma.clientStorage.getAsync('preferences'),
