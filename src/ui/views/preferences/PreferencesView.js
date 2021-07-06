@@ -12,11 +12,13 @@ class PreferencesView extends Element {
 		let x_spacing = this.find('#x_spacing').value
 		let y_spacing = this.find('#y_spacing').value
 		let starting_name = this.find('#starting_name').value
+		let wrap_instances = this.find('#wrap_instances').checked
 		let rename_trategy = this.find('#rename_strategy [selected]').getAttribute('data-value')
 		
 		let preferences = {
 			spacing: { x: parseInt(x_spacing), y: parseInt(y_spacing) },
 			start_name: starting_name,
+			wrap_instances: wrap_instances,
 			rename_strategy: rename_trategy
 		}
 		
@@ -32,7 +34,7 @@ class PreferencesView extends Element {
 		})
 	}
 
-	render() {
+	render() {		
 		return `
 			<form id="preferences" action="#">
 				<fieldset>		
@@ -57,6 +59,18 @@ class PreferencesView extends Element {
 						</div>
 					</label>
 				</fieldset>
+				
+				<label>
+					<strong>Wrap instances with frames</strong>
+					<p>When using the Tidy action, all instances will be wrapped with a frame of the same dimensions.</p>
+				
+					<label class="switch">
+						<div class="switch__container">
+							<input id="wrap_instances" type="checkbox" class="switch__checkbox" ${(this.attrs.wrapinstances == 'true') ? 'checked' : ''}>
+							<span class="switch__slider"></span>
+						</div>
+					</label>
+				</label>
 				
 				<label>
 					<strong>Starting frame number</strong>

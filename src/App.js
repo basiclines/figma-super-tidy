@@ -48,6 +48,7 @@ class ui extends Element {
 				xspacing="${this.data.preferences.spacing.x}"
 				yspacing="${this.data.preferences.spacing.y}"
 				startname="${this.data.preferences.start_name}"
+				wrapinstances="${this.data.preferences.wrap_instances}"
 				renamestrategy="${this.data.preferences.rename_strategy}"
 			>
 			</v-form>

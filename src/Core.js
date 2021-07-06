@@ -87,7 +87,7 @@ function cmdReorder() {
 	})
 }
 
-function cmdTidy(xSpacing, ySpacing) {
+function cmdTidy(xSpacing, ySpacing, wrapInstances) {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
@@ -122,7 +122,7 @@ function cmdTidy(xSpacing, ySpacing) {
 			var newYPos = yPos
 			
 			// Wrap instances with a frame around
-			if (match.type == 'INSTANCE') {
+			if (wrapInstances && match.type == 'INSTANCE') {
 				var instanceParent = figma.createFrame()
 				instanceParent.x = newXPos
 				instanceParent.y = newYPos
@@ -156,11 +156,13 @@ Promise.all([
 	
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
+	let WRAP_INSTANCES = true
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
 	let PREFERENCES = {
 		spacing: SPACING,
 		start_name: START_NAME,
+		wrap_instances: WRAP_INSTANCES,
 		rename_strategy: RENAME_STRATEGY_REPLACE
 	}
 	
@@ -195,13 +197,13 @@ Promise.all([
 	} else
 	if (cmd == 'tidy') {
 		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y)
+		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 		figma.notify('Super Tidy: Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'all') {
 		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y)
+		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 		cmdReorder()
 		cmdRename(preferences.rename_strategy, preferences.start_name)
 		figma.notify('Super Tidy')
@@ -223,7 +225,7 @@ Promise.all([
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
 
-				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y)
+				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name)
 				if (REORDER_ENABLED) cmdReorder()
 				figma.notify('Super Tidy')
