@@ -1,0 +1,15 @@
+{
+  "name": "Super Tidy",
+  "id": "731260060173130163",
+  "api": "1.0.0",
+  "ui": "dist/ui.html",
+  "main": "dist/core.js",
+	"menu": [
+		{"name": "Rename", "command": "rename"},
+		{"name": "Reorder", "command": "reorder"},
+		{"name": "Tidy", "command": "tidy"},
+		{"name": "Run all", "command": "all"},
+		{"separator": true},
+		{"name": "Run custom...", "command": "options"}
+	]
+}
