@@ -130,7 +130,7 @@ function cmdTidy(xSpacing, ySpacing, wrapInstances) {
 				instanceParent.appendChild(match)
 				match.x = 0
 				match.y = 0
-				figma.currentPage.selection = selection.concat(instanceParent)
+				figma.currentPage.selection = figma.currentPage.selection.concat(instanceParent)
 			} else {
 				match.x = newXPos
 				match.y = newYPos
@@ -211,14 +211,14 @@ Promise.all([
 	} else
 	if (cmd == 'options') {
 		// OPEN UI
-		figma.showUI(__html__, { width: 320, height: 460 })
+		figma.showUI(__html__, { width: 320, height: 540 })
 		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, preferences: preferences })
 		figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 
 		figma.on('selectionchange', () => {
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 		})
-
+		
 		figma.ui.onmessage = msg => {
 			if (msg.type === 'tidy') {
 				var RENAMING_ENABLED = msg.options.renaming
