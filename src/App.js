@@ -9,6 +9,7 @@ import Element from 'src/ui/Element'
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
 import 'src/ui/views/preferences/PreferencesView'
+import 'src/ui/components/display/DisplayComponent'
 
 
 class ui extends Element {
@@ -16,10 +17,14 @@ class ui extends Element {
 	beforeMount() {
 		window.addEventListener('message', e => {
 			let msg = event.data.pluginMessage
-			if (msg.type == 'init') {
+			if (msg.type == 'init-hidden' || msg.type == 'init') {
 				this.data.preferences = msg.preferences
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
+			}
+			
+			if (msg.type == 'init') {
+				this.insertDisplay(msg.AD_LAST_SHOWN_DATE)
 			}
 		})
 		
@@ -31,6 +36,13 @@ class ui extends Element {
 	
 	bind() {
 		Router.on('change:url', url => this.showActiveView(url))
+	}
+	
+	insertDisplay(lastShownDate) {
+		let elem = document.createElement('c-display')
+		elem.setAttribute('lastshowndate', lastShownDate)
+		elem.setAttribute('hidden', '')				
+		document.body.insertBefore(elem, document.body.querySelector('root-ui'))
 	}
 	
 	showActiveView(url) {

@@ -134,11 +134,13 @@ function cmdTidy(xSpacing, ySpacing) {
 Promise.all([
 	figma.clientStorage.getAsync('UUID'),
 	figma.clientStorage.getAsync('preferences'),
+	figma.clientStorage.getAsync('AD_LAST_SHOWN_DATE'),
 	figma.clientStorage.getAsync('spacing') // legacy
 ]).then(values => {
 	let UUID = values[0]
 	let preferences = values[1]
-	let spacing = values[2]
+	let AD_LAST_SHOWN_DATE = values[2] || 572083200 // initial date, if no date was saved previously
+	let spacing = values[3]
 	
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
@@ -164,7 +166,12 @@ Promise.all([
 		preferences = PREFERENCES
 	}
 	
-	figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, preferences: preferences })
+	figma.ui.postMessage({
+		type: 'init-hidden',
+		UUID: UUID,
+		cmd: cmd,
+		preferences: preferences
+	})
 	
 	// Command triggered by user
 	if (cmd == 'rename') {
@@ -196,7 +203,13 @@ Promise.all([
 	if (cmd == 'options') {
 		// OPEN UI
 		figma.showUI(__html__, { width: 320, height: 460 })
-		figma.ui.postMessage({ type: 'init', UUID: UUID, cmd: cmd, preferences: preferences })
+		figma.ui.postMessage({
+			type: 'init',
+			UUID: UUID,
+			cmd: cmd,
+			preferences: preferences,
+			AD_LAST_SHOWN_DATE: AD_LAST_SHOWN_DATE
+		})
 		figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 
 		figma.on('selectionchange', () => {
@@ -219,6 +232,10 @@ Promise.all([
 				preferences = msg.preferences
 				figma.clientStorage.setAsync('preferences', preferences)
 				figma.notify('Preferences saved')
+			} else
+			if (msg.type === 'displayImpression') {
+				figma.ui.resize(320, 460+124)
+				figma.clientStorage.setAsync('AD_LAST_SHOWN_DATE', Date.now())
 			}
 		}
 	}
