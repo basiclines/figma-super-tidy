@@ -87,7 +87,7 @@ function cmdReorder() {
 	})
 }
 
-function cmdTidy(xSpacing, ySpacing) {
+function cmdTidy(xSpacing, ySpacing, wrapInstances) {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
@@ -117,10 +117,26 @@ function cmdTidy(xSpacing, ySpacing) {
 				xPos = col.x
 				yPos = col.y
 			}
-			var match = allNodes.find(node => node.id === col.id)
-			match.x = (colidx == 0) ? xPos : xPos + xSpacing;
-			match.y = yPos
-			xPos = match.x + match.width
+			var match = allNodes.find(node => node.id === col.id)	
+			var newXPos =	(colidx == 0) ? xPos : xPos + xSpacing;
+			var newYPos = yPos
+			
+			// Wrap instances with a frame around
+			if (wrapInstances && match.type == 'INSTANCE') {
+				var instanceParent = figma.createFrame()
+				instanceParent.x = newXPos
+				instanceParent.y = newYPos
+				instanceParent.resize(match.width, match.height)
+				instanceParent.appendChild(match)
+				match.x = 0
+				match.y = 0
+				figma.currentPage.selection = figma.currentPage.selection.concat(instanceParent)
+			} else {
+				match.x = newXPos
+				match.y = newYPos
+			}
+				
+			xPos = newXPos + match.width
 		})
 
 		xPos = x0
@@ -128,9 +144,7 @@ function cmdTidy(xSpacing, ySpacing) {
 	})
 }
 
-// Obtain UUID then trigger init event
-
-// Obtain UUID and saved file url then trigger init event
+// Obtain UUID and preferences then trigger init event
 Promise.all([
 	figma.clientStorage.getAsync('UUID'),
 	figma.clientStorage.getAsync('preferences'),
@@ -144,11 +158,13 @@ Promise.all([
 	
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
+	let WRAP_INSTANCES = true
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
 	let PREFERENCES = {
 		spacing: SPACING,
 		start_name: START_NAME,
+		wrap_instances: WRAP_INSTANCES,
 		rename_strategy: RENAME_STRATEGY_REPLACE
 	}
 	
@@ -188,13 +204,13 @@ Promise.all([
 	} else
 	if (cmd == 'tidy') {
 		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y)
+		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 		figma.notify('Super Tidy: Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
 	if (cmd == 'all') {
 		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y)
+		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 		cmdReorder()
 		cmdRename(preferences.rename_strategy, preferences.start_name)
 		figma.notify('Super Tidy')
@@ -202,7 +218,7 @@ Promise.all([
 	} else
 	if (cmd == 'options') {
 		// OPEN UI
-		figma.showUI(__html__, { width: 320, height: 460 })
+		figma.showUI(__html__, { width: 320, height: 540 })
 		figma.ui.postMessage({
 			type: 'init',
 			UUID: UUID,
@@ -215,14 +231,14 @@ Promise.all([
 		figma.on('selectionchange', () => {
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 		})
-
+		
 		figma.ui.onmessage = msg => {
 			if (msg.type === 'tidy') {
 				var RENAMING_ENABLED = msg.options.renaming
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
 
-				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y)
+				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name)
 				if (REORDER_ENABLED) cmdReorder()
 				figma.notify('Super Tidy')
@@ -234,7 +250,7 @@ Promise.all([
 				figma.notify('Preferences saved')
 			} else
 			if (msg.type === 'displayImpression') {
-				figma.ui.resize(320, 460+124)
+				figma.ui.resize(320, 540+124)
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_DATE', Date.now())
 			}
 		}

@@ -47,7 +47,7 @@
 }
 
 body { text-align: left; overflow: hidden; }
-root-ui { transition: opacity 0.05s linear; display: block; position: relative; height: 459px; }
+root-ui { transition: opacity 0.05s linear; display: block; position: relative; height: 539px; }
 root-ui[notready] { opacity: 0; pointer-events: none; }
 
 .c-icon {
