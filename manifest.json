@@ -11,5 +11,6 @@
 		{"name": "Run all", "command": "all"},
 		{"separator": true},
 		{"name": "Run custom...", "command": "options"}
-	]
+	],
+	"editorType": ["figma", "figjam"]
 }
