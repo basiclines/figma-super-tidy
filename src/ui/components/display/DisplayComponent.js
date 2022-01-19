@@ -3,7 +3,7 @@ import Element from 'src/ui/Element'
 import DisplayNetwork from 'src/utils/DisplayNetwork'
 import Tracking from 'src/utils/Tracking'
 
-const PLUGIN_NAME = 'content_buddy'
+const PLUGIN_NAME = 'super_tidy'
 
 class DisplayComponent extends Element {
 	
