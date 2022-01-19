@@ -24,7 +24,7 @@ class ui extends Element {
 			}
 			
 			if (msg.type == 'init') {
-				this.insertDisplay(msg.AD_LAST_SHOWN_DATE)
+				this.insertDisplay(msg.AD_LAST_SHOWN_DATE, msg.AD_LAST_SHOWN_IMPRESSION)
 			}
 		})
 		
@@ -38,9 +38,10 @@ class ui extends Element {
 		Router.on('change:url', url => this.showActiveView(url))
 	}
 	
-	insertDisplay(lastShownDate) {
+	insertDisplay(lastShownDate, lastShownImpression) {
 		let elem = document.createElement('c-display')
 		elem.setAttribute('lastshowndate', lastShownDate)
+		elem.setAttribute('lastshownimpression', lastShownImpression)
 		elem.setAttribute('hidden', '')				
 		document.body.insertBefore(elem, document.body.querySelector('root-ui'))
 	}
