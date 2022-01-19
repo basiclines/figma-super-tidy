@@ -149,12 +149,14 @@ Promise.all([
 	figma.clientStorage.getAsync('UUID'),
 	figma.clientStorage.getAsync('preferences'),
 	figma.clientStorage.getAsync('AD_LAST_SHOWN_DATE'),
+	figma.clientStorage.getAsync('AD_LAST_SHOWN_IMPRESSION'),
 	figma.clientStorage.getAsync('spacing') // legacy
 ]).then(values => {
 	let UUID = values[0]
 	let preferences = values[1]
 	let AD_LAST_SHOWN_DATE = values[2] || 572083200 // initial date, if no date was saved previously
-	let spacing = values[3]
+	let AD_LAST_SHOWN_IMPRESSION = values[3] || 0 // initial impressions
+	let spacing = values[4]
 	
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
@@ -224,7 +226,8 @@ Promise.all([
 			UUID: UUID,
 			cmd: cmd,
 			preferences: preferences,
-			AD_LAST_SHOWN_DATE: AD_LAST_SHOWN_DATE
+			AD_LAST_SHOWN_DATE: AD_LAST_SHOWN_DATE,
+			AD_LAST_SHOWN_IMPRESSION: AD_LAST_SHOWN_IMPRESSION
 		})
 		figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 
@@ -252,6 +255,11 @@ Promise.all([
 			if (msg.type === 'displayImpression') {
 				figma.ui.resize(320, 540+124)
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_DATE', Date.now())
+				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', parseInt(AD_LAST_SHOWN_IMPRESSION)+1)
+			}
+			
+			if (msg.type === 'resetImpression') {
+				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', 0)
 			}
 		}
 	}
