@@ -31,7 +31,7 @@ function getNodesGroupedbyPosition(nodes) {
 }
 
 function getNameByPosition(row, col, startName) {
-	
+
 	var padLength = startName.length
 	var parseStartName = parseInt(startName)
 	var rowName = parseStartName + row * Math.pow(10, padLength - 1)
@@ -62,7 +62,7 @@ function cmdRename(renameStrategy, startName) {
 		row.columns.forEach((col, colidx) => {
 			var name = getNameByPosition(rowidx, colidx, startName)
 			var match = allNodes.find(node => node.id === col.id)
-			
+
 			if (renameStrategy == 'merge') {
 				match.name = `${name}_${match.name}`
 			} else
@@ -117,10 +117,10 @@ function cmdTidy(xSpacing, ySpacing, wrapInstances) {
 				xPos = col.x
 				yPos = col.y
 			}
-			var match = allNodes.find(node => node.id === col.id)	
+			var match = allNodes.find(node => node.id === col.id)
 			var newXPos =	(colidx == 0) ? xPos : xPos + xSpacing;
 			var newYPos = yPos
-			
+
 			// Wrap instances with a frame around
 			if (wrapInstances && match.type == 'INSTANCE') {
 				var instanceParent = figma.createFrame()
@@ -135,13 +135,43 @@ function cmdTidy(xSpacing, ySpacing, wrapInstances) {
 				match.x = newXPos
 				match.y = newYPos
 			}
-				
+
 			xPos = newXPos + match.width
 		})
 
 		xPos = x0
 		yPos = yPos + (tallestInRow[rowidx] + ySpacing)
 	})
+}
+
+function cmdPager(pager_variable) {
+	var selection = figma.currentPage.selection
+	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
+	var allNodes = parent.children
+	var groupedNodes = getNodesGroupedbyPosition(selection)
+	var frameIndex = 0
+
+	function searchPagerNodes(node, idx) {
+		if (typeof node.children != 'undefined') {
+			node.children.forEach(child => {
+				searchPagerNodes(child, idx)
+			})
+		} else if (node.type == 'TEXT' && node.name == pager_variable) {
+			var font = node.fontName
+			figma.loadFontAsync(font).then(() => {
+				node.characters = idx.toString()
+			})
+		}
+	}
+
+	groupedNodes.forEach(row => {
+		row.columns.forEach(col => {
+			var frame = allNodes.find(node => node.id === col.id)
+			searchPagerNodes(frame, frameIndex)
+			++frameIndex
+		})
+	})
+
 }
 
 // Obtain UUID and preferences then trigger init event
@@ -157,40 +187,42 @@ Promise.all([
 	let AD_LAST_SHOWN_DATE = values[2] || 572083200 // initial date, if no date was saved previously
 	let AD_LAST_SHOWN_IMPRESSION = values[3] || 0 // initial impressions
 	let spacing = values[4]
-	
+
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
+	let PAGER_VARIABLE = '{current}'
 	let WRAP_INSTANCES = true
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
 	let PREFERENCES = {
 		spacing: SPACING,
 		start_name: START_NAME,
+		pager_variable: PAGER_VARIABLE,
 		wrap_instances: WRAP_INSTANCES,
 		rename_strategy: RENAME_STRATEGY_REPLACE
 	}
-	
+
 	if (!UUID) {
 		UUID = Tracking.createUUID()
 		figma.clientStorage.setAsync('UUID', UUID)
 	}
-	
+
 	// legacy spacing preference
 	if (typeof spacing != 'undefined') {
 		PREFERENCES.spacing = spacing
 	}
-	
+
 	if (typeof preferences == 'undefined') {
 		preferences = PREFERENCES
 	}
-	
+
 	figma.ui.postMessage({
 		type: 'init-hidden',
 		UUID: UUID,
 		cmd: cmd,
 		preferences: preferences
 	})
-	
+
 	// Command triggered by user
 	if (cmd == 'rename') {
 		// RUNS WITHOUT UI
@@ -210,11 +242,18 @@ Promise.all([
 		figma.notify('Super Tidy: Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
+	if (cmd == 'pager') {
+		// RUNS WITHOUT UI
+		cmdPager(preferences.pager_variable)
+		figma.notify('Super Tidy: Pager')
+		setTimeout(() => figma.closePlugin(), 100)
+	} else
 	if (cmd == 'all') {
 		// RUNS WITHOUT UI
 		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 		cmdReorder()
 		cmdRename(preferences.rename_strategy, preferences.start_name)
+		cmdPager(preferences.pager_variable)
 		figma.notify('Super Tidy')
 		setTimeout(() => figma.closePlugin(), 100)
 	} else
@@ -234,18 +273,20 @@ Promise.all([
 		figma.on('selectionchange', () => {
 			figma.ui.postMessage({ type: 'selection', selection: figma.currentPage.selection })
 		})
-		
+
 		figma.ui.onmessage = msg => {
 			if (msg.type === 'tidy') {
 				var RENAMING_ENABLED = msg.options.renaming
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
+				var PAGER_ENABLED = msg.options.pager
 
 				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
 				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name)
 				if (REORDER_ENABLED) cmdReorder()
+				if (PAGER_ENABLED) cmdPager(preferences.pager_variable)
 				figma.notify('Super Tidy')
-				figma.closePlugin()
+				setTimeout(() => figma.closePlugin(), 100)
 			} else
 			if (msg.type === 'preferences') {
 				preferences = msg.preferences
@@ -257,7 +298,7 @@ Promise.all([
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_DATE', Date.now())
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', parseInt(AD_LAST_SHOWN_IMPRESSION)+1)
 			}
-			
+
 			if (msg.type === 'resetImpression') {
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', 0)
 			}

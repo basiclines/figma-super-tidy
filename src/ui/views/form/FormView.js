@@ -30,16 +30,19 @@ class FormView extends Element {
 		var renaming_check = document.getElementById('renaming_check')
 		var reorder_check = document.getElementById('reorder_check')
 		var tidy_check = document.getElementById('tidy_check')
+		var pager_check = document.getElementById('pager_check')
 		var tidy = document.getElementById('tidy')
 
 		function applySuperTidy() {
 			var renamingEnabled = renaming_check.checked;
 			var reorderEnabled = reorder_check.checked;
 			var tidyEnabled = tidy_check.checked;
+			var pagerEnabled = pager_check.checked;
 			var options = {
 				renaming: renamingEnabled,
 				reorder: reorderEnabled,
 				tidy: tidyEnabled,
+				pager: pagerEnabled
 			}
 
 			Tracking.track('clickApply', options)
@@ -76,7 +79,7 @@ class FormView extends Element {
 					</div>
 				</label>
 			</fieldset>
-			
+
 			<fieldset>
 				<label class="switch">
 					<div class="switch__container">
@@ -86,12 +89,12 @@ class FormView extends Element {
 					<div class="switch__label">
 						<strong>Reorder</strong>
 						<p class="type type--11-pos-normal">
-							Reorder your layers on the sidebar based on their position on the canvas. 
+							Reorder your layers on the sidebar based on their position on the canvas.
 						</p>
 					</div>
 				</label>
 			</fieldset>
-			
+
 			<fieldset>
 				<label class="switch">
 					<div class="switch__container">
@@ -106,7 +109,22 @@ class FormView extends Element {
 					</div>
 				</label>
 			</fieldset>
-			
+
+			<fieldset>
+				<label class="switch">
+					<div class="switch__container">
+						<input id="pager_check" type="checkbox" class="switch__checkbox" checked>
+						<span class="switch__slider"></span>
+					</div>
+					<div class="switch__label">
+						<strong>Pager</strong>
+						<p class="type type--11-pos-normal">
+							Creates a pagination for the given selection using the position in the canvas of each frame. The page number is written inside a layer with the name {current} by default.
+						</p>
+					</div>
+				</label>
+			</fieldset>
+
 			<button type="submit" id="tidy" class="button button--primary">Run</button>
 		</form>
 		`

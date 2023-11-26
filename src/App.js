@@ -22,30 +22,30 @@ class ui extends Element {
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
-			
+
 			if (msg.type == 'init') {
 				this.insertDisplay(msg.AD_LAST_SHOWN_DATE, msg.AD_LAST_SHOWN_IMPRESSION)
 			}
 		})
-		
+
 		Router.setup({
 			index: '#index',
 			preferences: '#preferences'
 		})
 	}
-	
+
 	bind() {
 		Router.on('change:url', url => this.showActiveView(url))
 	}
-	
+
 	insertDisplay(lastShownDate, lastShownImpression) {
 		let elem = document.createElement('c-display')
 		elem.setAttribute('lastshowndate', lastShownDate)
 		elem.setAttribute('lastshownimpression', lastShownImpression)
-		elem.setAttribute('hidden', '')				
+		elem.setAttribute('hidden', '')
 		document.body.insertBefore(elem, document.body.querySelector('root-ui'))
 	}
-	
+
 	showActiveView(url) {
 		let view = url.replace('#', '')
 		this.findAll('[data-view]').forEach(view => view.setAttribute('hidden', ''))
@@ -61,6 +61,7 @@ class ui extends Element {
 				xspacing="${this.data.preferences.spacing.x}"
 				yspacing="${this.data.preferences.spacing.y}"
 				startname="${this.data.preferences.start_name}"
+				pager_variable="${this.data.preferences.pager_variable}"
 				wrapinstances="${this.data.preferences.wrap_instances}"
 				renamestrategy="${this.data.preferences.rename_strategy}"
 			>
