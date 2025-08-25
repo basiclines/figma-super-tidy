@@ -13,8 +13,15 @@
   - Launch any command → plugin opens a countdown screen showing remaining seconds and a “Go Pro to run now” action.
   - Options:
     - Wait until countdown completes → command runs automatically at 0.
-    - Click “Go Pro to run now” → initiate Figma checkout, return to plugin, and if payment successful, run immediately.
+    - Click "Go Pro to run now" → initiate Figma checkout, return to plugin, and if payment successful, run immediately.
   - If checkout is canceled/fails → return to countdown (continue from remaining seconds or restart as desired).
+
+### Trigger and Timing Guarantees
+- Countdown/paywall appears only after a user explicitly triggers a command (via plugin UI or Figma menu command).
+- Command execution is deferred until countdown completes or purchase succeeds; no pre-execution side effects occur.
+- Treat the countdown as an interstitial gate between invocation and execution; the command is queued and runs only upon proceed.
+- Closing the plugin/countdown before proceed means the command does not run.
+- Applies to single commands and "Run all". Paying users bypass the gate entirely.
 
 ---
 
