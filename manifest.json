@@ -4,6 +4,12 @@
   "api": "1.0.0",
   "ui": "dist/ui.html",
   "main": "dist/core.js",
+	"networkAccess": {
+		"allowedDomains": [
+			"https://*.amplitude.com",
+			"https://figma-plugins-display-network.netlify.app"
+		]
+	},
 	"menu": [
 		{"name": "Rename", "command": "rename"},
 		{"name": "Reorder", "command": "reorder"},

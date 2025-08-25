@@ -9,6 +9,9 @@
 ### User Experience
 - **Paying user**
   - Launch any command (including “Run all”) → command runs immediately, no UI delay screen.
+- **Trial user (within 7 days of first run)**
+  - Launch any command → command runs immediately (no countdown).
+  - Also show a `figma.notify` with remaining trial time and a prompt to open the plugin to purchase Pro.
 - **Unpaid user**
   - Launch any command → plugin opens a countdown screen showing remaining seconds and a “Go Pro to run now” action.
   - Options:
@@ -29,7 +32,9 @@
 - **Central gating function** wraps all command execution paths:
   - Check `figma.payments.status`.
   - If paid → run command.
-  - If not paid → show countdown UI and allow checkout to skip.
+  - If not paid, check 7-day trial window via `figma.payments.getUserFirstRanSecondsAgo()`:
+    - If trial active → bypass countdown, show `figma.notify` with remaining time and prompt to open plugin and upgrade, then run command.
+    - If trial expired → show countdown UI and allow checkout to skip.
 - **Countdown**: uniform random integer between 6–15 seconds per command invocation.
 - **UI**: New “Countdown” view inside the existing plugin UI with:
   - Prominent timer, clear copy explaining the free delay.
@@ -40,13 +45,19 @@
 ---
 
 ### Figma Payments Integration
-- **Docs**: See Figma’s Payments docs: [Requiring payment](https://www.figma.com/plugin-docs/requiring-payment/)
-- **APIs** (verify exact names against current docs during implementation):
-  - Read status: `figma.payments.status` → check `.type` (e.g., `PAID` vs other states)
-  - Initiate purchase: `figma.payments.initiateCheckoutAsync(options)`
-    - Use appropriate `interstitial` reason (e.g., "TRIAL_ENDED", "LOCKED_FEATURE") if supported.
-  - Re-check status after checkout resolves.
-- **Manifest** (verify against current docs): ensure Payments access is enabled in `manifest.json` if required by current API (e.g., a `permissions` entry for payments).
+- **Docs**: Figma Payments API ([link](https://www.figma.com/plugin-docs/api/figma-payments/)).
+- **Manifest requirement**: You must include permissions or API calls will throw:
+  - `{"permissions": ["payments"]}`
+- **Status**: `figma.payments.status` (readonly) returns `{ type: "UNPAID" | "PAID" | "NOT_SUPPORTED" }`.
+  - Treat `NOT_SUPPORTED` as an error and do not grant paid features. For gating, handle as unpaid (show countdown/checkout), but never bypass.
+- **Checkout**: `figma.payments.initiateCheckoutAsync(options?)` with `options.interstitial` in `"PAID_FEATURE" | "TRIAL_ENDED" | "SKIP"`.
+  - Use `PAID_FEATURE` for feature gating; `TRIAL_ENDED` for time/usage trials; `SKIP` if you present your own CTA UI.
+  - Throws in query mode while accepting plugin parameters; never call from that state.
+  - After it resolves, re-check `figma.payments.status`.
+- **Dev helpers**:
+  - `figma.payments.setPaymentStatusInDevelopment(status)` (development only) to simulate statuses.
+  - `figma.payments.getUserFirstRanSecondsAgo()` for 7-day trial logic.
+  - `figma.payments.requestCheckout()` (text review plugins only) and `figma.payments.getPluginPaymentTokenAsync()` (server identity) as needed.
 
 ---
 
@@ -56,10 +67,12 @@
    - Ensure any network access configuration is present if remote calls/logging are used.
 
 2. Core gating helper (new module, e.g., `src/payments/gate.ts`)
-   - `getPaymentStatus(): Promise<"PAID" | "UNPAID" | "UNKNOWN" | ...>`
+   - `getPaymentStatus(): Promise<"PAID" | "UNPAID" | "NOT_SUPPORTED">` (treat `NOT_SUPPORTED` as error/unpaid; do not grant paid features)
+   - `isTrialActive(): boolean` and `getTrialRemainingSeconds(): number` using `figma.payments.getUserFirstRanSecondsAgo()` and a 7-day window.
    - `initiateCheckout(reason?: string): Promise<boolean>`
    - `ensurePaidOrCountdown(commandName: string, onProceed: () => void): Promise<void>`
      - If paid → `onProceed()`
+     - Else if trial active → show trial notify, then `onProceed()`
      - Else → show UI with `countdownSeconds`, handle skip (checkout) or wait to 0 → `onProceed()`
    - Cache a short-lived in-memory flag per session to avoid double-gating when one command triggers others.
 
@@ -112,6 +125,17 @@ async function ensurePaidOrCountdown(commandName: string, onProceed: () => void)
     return;
   }
 
+  const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
+  const secondsSinceFirstRun = figma.payments.getUserFirstRanSecondsAgo();
+  const trialRemainingSeconds = Math.max(SEVEN_DAYS_IN_SECONDS - secondsSinceFirstRun, 0);
+  const isTrialActive = trialRemainingSeconds > 0;
+
+  if (isTrialActive) {
+    figma.notify(formatTrialRemainingMessage(trialRemainingSeconds));
+    onProceed();
+    return;
+  }
+
   const seconds = getRandomIntInclusive(6, 15);
   figma.showUI(__html__, { width: 360, height: 240 });
   figma.ui.postMessage({ type: 'start-countdown', seconds, commandName });
@@ -119,7 +143,7 @@ async function ensurePaidOrCountdown(commandName: string, onProceed: () => void)
   figma.ui.onmessage = async (msg) => {
     if (msg.type === 'skip-countdown') {
       try {
-        await figma.payments.initiateCheckoutAsync({ /* interstitial: 'LOCKED_FEATURE' */ });
+        await figma.payments.initiateCheckoutAsync({ interstitial: 'PAID_FEATURE' });
       } catch (e) { /* swallow and continue countdown */ }
       const newStatus = figma.payments.status;
       if (newStatus?.type === 'PAID') {
@@ -134,6 +158,16 @@ async function ensurePaidOrCountdown(commandName: string, onProceed: () => void)
 }
 ```
 
+// Example helper for trial notify copy
+function formatTrialRemainingMessage(remainingSeconds: number): string {
+  const remainingDays = Math.floor(remainingSeconds / (24 * 60 * 60));
+  const remainingHours = Math.floor((remainingSeconds % (24 * 60 * 60)) / (60 * 60));
+  const remaining = remainingDays > 0
+    ? `${remainingDays} day${remainingDays === 1 ? '' : 's'}`
+    : `${remainingHours} hour${remainingHours === 1 ? '' : 's'}`;
+  return `Pro trial: ${remaining} left. Open Super Tidy to upgrade for instant runs.`;
+}
+
 ---
 
 ### Copy Guidelines (UI)
@@ -141,6 +175,10 @@ async function ensurePaidOrCountdown(commandName: string, onProceed: () => void)
 - Body: “Run will start in X seconds. Get Pro to skip the wait and run instantly.”
 - Primary CTA: “Go Pro to run now”
 - Secondary note: “Pro also unlocks instant runs forever.”
+
+- Trial notify (shown on every command during active trial):
+  - Message: “Pro trial: X left. Open Super Tidy to upgrade for instant runs.”
+  - Keep concise; `figma.notify` truncates long text.
 
 ---
 
