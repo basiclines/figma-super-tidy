@@ -18,14 +18,20 @@ class ui extends Element {
 	beforeMount() {
 		window.addEventListener('message', e => {
 			let msg = event.data.pluginMessage
-			if (msg.type == 'init-hidden' || msg.type == 'init') {
+			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
+				console.log(`[App] ${msg.type}:`, this.data.preferences)
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
 
 			if (msg.type == 'init') {
 				this.insertDisplay(msg.AD_LAST_SHOWN_DATE, msg.AD_LAST_SHOWN_IMPRESSION)
+			}
+
+			// Handle direct countdown from Core.js (for menu commands)
+			if (msg.type == 'start-direct-countdown') {
+				this.handleDirectCountdown(msg.seconds, msg.commandName)
 			}
 		})
 
@@ -48,16 +54,42 @@ class ui extends Element {
 		document.body.insertBefore(elem, document.body.querySelector('root-ui'))
 	}
 
+	handleDirectCountdown(seconds, commandName) {
+		console.log(`[App] Handling direct countdown: ${seconds}s for ${commandName}`)
+		
+		// Navigate to countdown view
+		Router.navigate(Router.routes.countdown)
+		
+		// Wait for the view to be rendered, then start countdown
+		setTimeout(() => {
+			const countdownView = document.querySelector('[data-view="countdown"]')
+			if (countdownView && countdownView.startCountdown) {
+				countdownView.startCountdown(seconds, commandName, () => {
+					// Send completion message back to Core.js
+					parent.postMessage({ 
+						pluginMessage: { type: 'direct-countdown-complete' } 
+					}, '*')
+				})
+			} else {
+				console.error('[App] Countdown view not found or not ready')
+			}
+		}, 100)
+	}
+
 
 
 	showActiveView(url) {
-		let view = url.replace('#', '')
+		let viewName = url.replace('#', '')
 		this.findAll('[data-view]').forEach(view => view.setAttribute('hidden', ''))
-		this.find(`[data-view="${view}"]`).removeAttribute('hidden')
+		const targetView = this.find(`[data-view="${viewName}"]`)
+		if (targetView) {
+			targetView.removeAttribute('hidden')
+		}
 	}
 
 	render() {
 		if (!this.data.preferences) return '';
+		console.log('[App] Rendering views')
 		return`
 			<c-toolbar></c-toolbar>
 			<v-form data-view="index" class="view"></v-form>

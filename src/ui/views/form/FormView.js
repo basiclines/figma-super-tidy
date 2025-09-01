@@ -76,13 +76,17 @@ class FormView extends Element {
 			this.showCountdownView()
 			
 			// Start countdown directly on the countdown view
-			// Wait a bit for the router to show the view, then start countdown
+			// Wait for the view to be rendered, then start countdown
 			setTimeout(() => {
 				const countdownView = document.querySelector('[data-view="countdown"]')
-				countdownView.startCountdown(seconds, commandName, () => {
-					this.executePendingCommand()
-				})
-			}, 50)
+				if (countdownView && countdownView.startCountdown) {
+					countdownView.startCountdown(seconds, commandName, () => {
+						this.executePendingCommand()
+					})
+				} else {
+					console.error('[FormView] Countdown view not found or not ready')
+				}
+			}, 100)
 		} else {
 			// Execute immediately if licensed
 			this.executeCommand(commandName, options)

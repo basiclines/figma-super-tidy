@@ -1,7 +1,48 @@
 import Tracking from 'src/utils/Tracking'
+import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
 
 const cmd = figma.command
 figma.showUI(__html__, { visible: false })
+
+// Helper function to handle gating for direct menu commands
+function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID) {
+	if (shouldShowCountdown()) {
+		// Show UI with countdown for unlicensed users
+		figma.showUI(__html__, { width: 360, height: 280 })
+		
+		const seconds = getCountdownSeconds()
+		console.log(`[Core] Starting countdown for direct command ${commandName}: ${seconds}s`)
+		
+		// Send init message first so UI components are ready
+		figma.ui.postMessage({
+			type: 'init-direct',
+			UUID: UUID,
+			cmd: commandName,
+			preferences: preferences
+		})
+		
+		// Then send countdown start message
+		setTimeout(() => {
+			figma.ui.postMessage({
+				type: 'start-direct-countdown',
+				seconds: seconds,
+				commandName: commandName
+			})
+		}, 50)
+		
+		// Handle countdown completion
+		figma.ui.onmessage = (msg) => {
+			if (msg.type === 'direct-countdown-complete') {
+				console.log(`[Core] Direct countdown complete, executing ${commandName}`)
+				executeCommand()
+				figma.closePlugin()
+			}
+		}
+	} else {
+		// Execute immediately if licensed
+		executeCommand()
+	}
+}
 
 function getNodesGroupedbyPosition(nodes) {
 	// Prepare nodes
@@ -225,37 +266,42 @@ Promise.all([
 
 	// Command triggered by user
 	if (cmd == 'rename') {
-		// RUNS WITHOUT UI
-		cmdRename(preferences.rename_strategy, preferences.start_name)
-		figma.notify('Super Tidy: Rename')
-		setTimeout(() => figma.closePlugin(), 100)
+		// RUNS WITH COUNTDOWN GATE
+		ensureDirectCommandGate('rename', () => {
+			cmdRename(preferences.rename_strategy, preferences.start_name)
+			figma.notify('Super Tidy: Rename')
+		}, preferences, UUID)
 	} else
 	if (cmd == 'reorder') {
-		// RUNS WITHOUT UI
-		cmdReorder()
-		figma.notify('Super Tidy: Reorder')
-		setTimeout(() => figma.closePlugin(), 100)
+		// RUNS WITH COUNTDOWN GATE
+		ensureDirectCommandGate('reorder', () => {
+			cmdReorder()
+			figma.notify('Super Tidy: Reorder')
+		}, preferences, UUID)
 	} else
 	if (cmd == 'tidy') {
-		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
-		figma.notify('Super Tidy: Tidy')
-		setTimeout(() => figma.closePlugin(), 100)
+		// RUNS WITH COUNTDOWN GATE
+		ensureDirectCommandGate('tidy', () => {
+			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
+			figma.notify('Super Tidy: Tidy')
+		}, preferences, UUID)
 	} else
 	if (cmd == 'pager') {
-		// RUNS WITHOUT UI
-		cmdPager(preferences.pager_variable)
-		figma.notify('Super Tidy: Pager')
-		setTimeout(() => figma.closePlugin(), 100)
+		// RUNS WITH COUNTDOWN GATE
+		ensureDirectCommandGate('pager', () => {
+			cmdPager(preferences.pager_variable)
+			figma.notify('Super Tidy: Pager')
+		}, preferences, UUID)
 	} else
 	if (cmd == 'all') {
-		// RUNS WITHOUT UI
-		cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
-		cmdReorder()
-		cmdRename(preferences.rename_strategy, preferences.start_name)
-		cmdPager(preferences.pager_variable)
-		figma.notify('Super Tidy')
-		setTimeout(() => figma.closePlugin(), 100)
+		// RUNS WITH COUNTDOWN GATE
+		ensureDirectCommandGate('all', () => {
+			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
+			cmdReorder()
+			cmdRename(preferences.rename_strategy, preferences.start_name)
+			cmdPager(preferences.pager_variable)
+			figma.notify('Super Tidy')
+		}, preferences, UUID)
 	} else
 	if (cmd == 'options') {
 		// OPEN UI

@@ -7,7 +7,8 @@
 	"networkAccess": {
 		"allowedDomains": [
 			"https://*.amplitude.com",
-			"https://*.netlify.app/"
+			"https://*.netlify.app/",
+			"https://rsms.me/"
 		]
 	},
 	"menu": [
