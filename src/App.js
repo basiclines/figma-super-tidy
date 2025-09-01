@@ -9,6 +9,7 @@ import Element from 'src/ui/Element'
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
 import 'src/ui/views/preferences/PreferencesView'
+import 'src/ui/views/countdown/CountdownView'
 import 'src/ui/components/display/DisplayComponent'
 
 
@@ -30,7 +31,8 @@ class ui extends Element {
 
 		Router.setup({
 			index: '#index',
-			preferences: '#preferences'
+			preferences: '#preferences',
+			countdown: '#countdown'
 		})
 	}
 
@@ -45,6 +47,8 @@ class ui extends Element {
 		elem.setAttribute('hidden', '')
 		document.body.insertBefore(elem, document.body.querySelector('root-ui'))
 	}
+
+
 
 	showActiveView(url) {
 		let view = url.replace('#', '')
@@ -64,8 +68,8 @@ class ui extends Element {
 				pager_variable="${this.data.preferences.pager_variable}"
 				wrapinstances="${this.data.preferences.wrap_instances}"
 				renamestrategy="${this.data.preferences.rename_strategy}"
-			>
-			</v-form>
+			></v-preferences>
+			<v-countdown class="view" hidden data-view="countdown"></v-countdown>
 		`
 	}
 }

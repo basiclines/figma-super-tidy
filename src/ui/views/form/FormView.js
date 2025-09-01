@@ -3,8 +3,14 @@ import './FormView.css'
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
 import Router from 'src/utils/Router'
+import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
 
 class FormView extends Element {
+
+	beforeMount() {
+		// Initialize pending command state
+		this.data.pendingCommand = null
+	}
 
 	handleEmptyState(selection) {
 		if (selection.length == 0) {
@@ -33,7 +39,7 @@ class FormView extends Element {
 		var pager_check = document.getElementById('pager_check')
 		var tidy = document.getElementById('tidy')
 
-		function applySuperTidy() {
+		const applySuperTidy = () => {
 			var renamingEnabled = renaming_check.checked;
 			var reorderEnabled = reorder_check.checked;
 			var tidyEnabled = tidy_check.checked;
@@ -46,7 +52,7 @@ class FormView extends Element {
 			}
 
 			Tracking.track('clickApply', options)
-			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
+			this.handleCommandRequest('tidy', options)
 		}
 
 
@@ -54,6 +60,63 @@ class FormView extends Element {
 			applySuperTidy()
 			e.preventDefault()
 		}
+	}
+
+	handleCommandRequest(commandName, options) {
+		console.log(`[FormView] Command request: ${commandName}`, options)
+		
+		if (shouldShowCountdown()) {
+			// Store the command for later execution
+			this.data.pendingCommand = { commandName, options }
+			
+			// Start countdown
+			const seconds = getCountdownSeconds()
+			console.log(`[FormView] Starting countdown: ${seconds}s`)
+			
+			this.showCountdownView()
+			
+			// Start countdown directly on the countdown view
+			// Wait a bit for the router to show the view, then start countdown
+			setTimeout(() => {
+				const countdownView = document.querySelector('[data-view="countdown"]')
+				countdownView.startCountdown(seconds, commandName, () => {
+					this.executePendingCommand()
+				})
+			}, 50)
+		} else {
+			// Execute immediately if licensed
+			this.executeCommand(commandName, options)
+		}
+	}
+	
+	executePendingCommand() {
+		if (this.data.pendingCommand) {
+			console.log(`[FormView] Executing pending command:`, this.data.pendingCommand)
+			this.executeCommand(this.data.pendingCommand.commandName, this.data.pendingCommand.options)
+			this.data.pendingCommand = null
+			this.showFormView()
+		}
+	}
+	
+	executeCommand(commandName, options) {
+		console.log(`[FormView] Executing command: ${commandName}`, options)
+		// Send command to Core.js
+		parent.postMessage({ 
+			pluginMessage: { 
+				type: commandName, 
+				options: options 
+			} 
+		}, '*')
+	}
+
+	showCountdownView() {
+		// Use Router to navigate to countdown view
+		Router.navigate(Router.routes.countdown)
+	}
+
+	showFormView() {
+		// Use Router to navigate back to form view
+		Router.navigate(Router.routes.index)
 	}
 
 	render() {
