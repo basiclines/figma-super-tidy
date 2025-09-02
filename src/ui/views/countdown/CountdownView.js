@@ -64,10 +64,7 @@ class CountdownView extends Element {
 	}
 
 	handleGetPro() {
-		console.log('[CountdownView] User clicked Get Pro button')
-		// TODO: Implement Gumroad checkout in future iterations
-		// For now, just log the action
-		console.log('Get Pro functionality will be implemented in Iteration 3')
+		window.open('https://basiclines.gumroad.com/l/super-tidy-pro', '_blank')
 	}
 
 	bind() {
