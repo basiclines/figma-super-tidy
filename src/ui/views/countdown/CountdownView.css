@@ -24,21 +24,22 @@ v-countdown p {
 }
 
 v-countdown .countdown-timer {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-interactive-positive);
-  margin-bottom: 20px;
+  font: var(--type-small-bold);
+  color: var(--color-text-secondary);
+  margin: 0;
+  position: relative;
+  top: -32px;
+  left: 4px;
   font-variant-numeric: tabular-nums;
 }
 
 v-countdown .countdown-timer-hint {
   font: var(--type-small-normal);
   color: var(--color-text-tertiary);
-  margin-bottom: 20px;
   line-height: 1.4;
   text-align: center;
   max-width: 200px;
-  margin: 12px auto 0;
+  margin: 0 auto 20px;
 }
 
 v-countdown .button {

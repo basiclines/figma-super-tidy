@@ -1,5 +1,6 @@
 import './CountdownView.css'
 import Element from 'src/ui/Element'
+import './AnalogChronometer'
 
 class CountdownView extends Element {
 
@@ -16,6 +17,7 @@ class CountdownView extends Element {
 		console.log(`[CountdownView] Starting countdown: ${seconds}s for ${commandName}`)
 		
 		this.data.seconds = seconds
+		this.data.totalSeconds = seconds
 		this.data.commandName = commandName
 		this.data.onComplete = onComplete
 		this.data.countdownFinished = false
@@ -29,7 +31,7 @@ class CountdownView extends Element {
 		// Start countdown timer
 		this.data.intervalId = setInterval(() => {
 			this.data.seconds--
-			this.render()
+			this.render() // This will update the chronometer via attributes
 
 			if (this.data.seconds <= 0) {
 				this.finishCountdown()
@@ -98,12 +100,14 @@ class CountdownView extends Element {
 				<p class="countdown-description">
 					Super Tidy Pro is a lifetime one-time purchase. No recurring charges or subscriptions.
 				</p>
-				<div class="countdown-timer">
-					${this.data.seconds}s
-					<p class="countdown-timer-hint">
+				<analog-chrono 
+					total-seconds="${this.data.totalSeconds || 0}" 
+					current-seconds="${this.data.seconds || 0}">
+				</analog-chrono>
+				<span class="countdown-timer">${this.data.seconds > 0 ? this.data.seconds + 's' : 'Ready'}</span>
+				<p class="countdown-timer-hint">
 					You are on the free plan, you need to wait before running your command.
-					</p>
-				</div>
+				</p>
 				<button id="run-now" class="button button--secondary" ${this.data.countdownFinished ? '' : 'disabled'}>Run now</button>
 				<button id="get-pro" class="button button--primary">Get Super Tidy Pro</button>
 			</section>
