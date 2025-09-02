@@ -61,11 +61,21 @@ class CountdownView extends Element {
 		}
 	}
 
+	handleGetPro() {
+		console.log('[CountdownView] User clicked Get Pro button')
+		// TODO: Implement Gumroad checkout in future iterations
+		// For now, just log the action
+		console.log('Get Pro functionality will be implemented in Iteration 3')
+	}
+
 	bind() {
-		// Handle run now button click
+		// Handle button clicks
 		this.addEventListener('click', (e) => {
 			if (e.target.id === 'run-now') {
 				this.executeCommand()
+			}
+			if (e.target.id === 'get-pro') {
+				this.handleGetPro()
 			}
 		})
 	}
@@ -86,12 +96,16 @@ class CountdownView extends Element {
 			<section class="countdown-container">
 				<h1 class="countdown-title">Get Super Tidy Pro to skip the countdown</h1>
 				<p class="countdown-description">
-					You are on the free plan, you need to wait before running your command.
 					Super Tidy Pro is a lifetime one-time purchase. No recurring charges or subscriptions.
 				</p>
-				<div class="countdown-timer">${this.data.seconds}s</div>
+				<div class="countdown-timer">
+					${this.data.seconds}s
+					<p class="countdown-timer-hint">
+					You are on the free plan, you need to wait before running your command.
+					</p>
+				</div>
 				<button id="run-now" class="button button--secondary" ${this.data.countdownFinished ? '' : 'disabled'}>Run now</button>
-				<button class="button button--primary">Get Super Tidy Pro</button>
+				<button id="get-pro" class="button button--primary">Get Super Tidy Pro</button>
 			</section>
 		`
 	}

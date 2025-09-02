@@ -1,43 +1,55 @@
-.countdown-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+/* COUNTDOWN VIEW - Following project styling patterns */
+
+v-countdown {
+  display: block;
+  padding: 16px;
+}
+
+v-countdown .countdown-container {
   text-align: center;
-  min-height: 160px;
+  padding: 24px 0;
 }
 
-.countdown-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--figma-color-text);
+v-countdown h1 {
+  font: var(--type-large-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
 }
 
-.countdown-description {
-  font-size: 12px;
-  color: var(--figma-color-text-secondary);
+v-countdown p {
+  font: var(--type-medium-normal);
+  color: var(--color-text-secondary);
   margin-bottom: 20px;
   line-height: 1.4;
 }
 
-.countdown-timer {
+v-countdown .countdown-timer {
   font-size: 32px;
   font-weight: 700;
-  color: var(--figma-color-text-brand);
-  margin-bottom: 16px;
+  color: var(--color-interactive-positive);
+  margin-bottom: 20px;
   font-variant-numeric: tabular-nums;
 }
 
-.countdown-command {
-  font-size: 11px;
-  color: var(--figma-color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 16px;
+v-countdown .countdown-timer-hint {
+  font: var(--type-small-normal);
+  color: var(--color-text-tertiary);
+  margin-bottom: 20px;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 200px;
+  margin: 12px auto 0;
 }
 
-.countdown-container .button {
-  margin-top: 8px;
+v-countdown .button {
+  margin: 8px 4px 0;
+  min-width: 120px;
+}
+
+v-countdown .button:first-of-type {
+  margin-left: 0;
+}
+
+v-countdown .button:last-of-type {
+  margin-right: 0;
 }

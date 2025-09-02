@@ -1,6 +1,8 @@
 import Tracking from 'src/utils/Tracking'
 import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
 
+const UI_HEIGHT = 540
+
 const cmd = figma.command
 figma.showUI(__html__, { visible: false })
 
@@ -8,7 +10,7 @@ figma.showUI(__html__, { visible: false })
 function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID) {
 	if (shouldShowCountdown()) {
 		// Show UI with countdown for unlicensed users
-		figma.showUI(__html__, { width: 360, height: 280 })
+		figma.showUI(__html__, { width: 360, height: UI_HEIGHT })
 		
 		const seconds = getCountdownSeconds()
 		console.log(`[Core] Starting countdown for direct command ${commandName}: ${seconds}s`)
@@ -305,7 +307,7 @@ Promise.all([
 	} else
 	if (cmd == 'options') {
 		// OPEN UI
-		figma.showUI(__html__, { width: 320, height: 540 })
+		figma.showUI(__html__, { width: 320, height: UI_HEIGHT })
 		figma.ui.postMessage({
 			type: 'init',
 			UUID: UUID,
