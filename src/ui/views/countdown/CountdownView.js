@@ -9,6 +9,7 @@ class CountdownView extends Element {
 		this.data.commandName = ''
 		this.data.intervalId = null
 		this.data.onComplete = null
+		this.data.countdownFinished = false
 	}
 
 	startCountdown(seconds, commandName, onComplete) {
@@ -17,6 +18,7 @@ class CountdownView extends Element {
 		this.data.seconds = seconds
 		this.data.commandName = commandName
 		this.data.onComplete = onComplete
+		this.data.countdownFinished = false
 		this.render()
 
 		// Clear any existing interval
@@ -30,13 +32,13 @@ class CountdownView extends Element {
 			this.render()
 
 			if (this.data.seconds <= 0) {
-				this.completeCountdown()
+				this.finishCountdown()
 			}
 		}, 1000)
 	}
 
-	completeCountdown() {
-		console.log('[CountdownView] Countdown complete!')
+	finishCountdown() {
+		console.log('[CountdownView] Countdown finished - showing button')
 		
 		// Clear interval
 		if (this.data.intervalId) {
@@ -44,10 +46,28 @@ class CountdownView extends Element {
 			this.data.intervalId = null
 		}
 
+		// Mark countdown as finished and show button
+		this.data.countdownFinished = true
+		this.data.seconds = 0
+		this.render()
+	}
+
+	executeCommand() {
+		console.log('[CountdownView] User clicked Run Now button')
+		
 		// Call the completion callback directly
 		if (this.data.onComplete) {
 			this.data.onComplete()
 		}
+	}
+
+	bind() {
+		// Handle run now button click
+		this.addEventListener('click', (e) => {
+			if (e.target.id === 'run-now') {
+				this.executeCommand()
+			}
+		})
 	}
 
 	dismount() {
@@ -58,19 +78,21 @@ class CountdownView extends Element {
 	}
 
 	render() {
-		if (!this.data.seconds && !this.data.commandName) {
+		if (!this.data.seconds && !this.data.commandName && !this.data.countdownFinished) {
 			return '<div class="countdown-container">Loading...</div>'
 		}
 
 		return `
-			<div class="countdown-container">
-				<div class="countdown-title">Free mode: starting soon</div>
-				<div class="countdown-description">
-					Your command will start automatically in:
-				</div>
+			<section class="countdown-container">
+				<h1 class="countdown-title">Get Super Tidy Pro to skip the countdown</h1>
+				<p class="countdown-description">
+					You are on the free plan, you need to wait before running your command.
+					Super Tidy Pro is a lifetime one-time purchase. No recurring charges or subscriptions.
+				</p>
 				<div class="countdown-timer">${this.data.seconds}s</div>
-				<div class="countdown-command">${this.data.commandName}</div>
-			</div>
+				<button id="run-now" class="button button--secondary" ${this.data.countdownFinished ? '' : 'disabled'}>Run now</button>
+				<button class="button button--primary">Get Super Tidy Pro</button>
+			</section>
 		`
 	}
 }

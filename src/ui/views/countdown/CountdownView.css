@@ -35,4 +35,9 @@
   color: var(--figma-color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.countdown-container .button {
+  margin-top: 8px;
 }
