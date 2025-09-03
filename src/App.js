@@ -10,6 +10,7 @@ import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
 import 'src/ui/views/preferences/PreferencesView'
 import 'src/ui/views/countdown/CountdownView'
+import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
 
@@ -38,7 +39,8 @@ class ui extends Element {
 		Router.setup({
 			index: '#index',
 			preferences: '#preferences',
-			countdown: '#countdown'
+			countdown: '#countdown',
+			license: '#license'
 		})
 	}
 
@@ -102,6 +104,7 @@ class ui extends Element {
 				renamestrategy="${this.data.preferences.rename_strategy}"
 			></v-preferences>
 			<v-countdown class="view" hidden data-view="countdown"></v-countdown>
+			<v-license class="view" hidden data-view="license"></v-license>
 		`
 	}
 }

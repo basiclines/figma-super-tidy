@@ -6,6 +6,15 @@ const UI_HEIGHT = 540
 const cmd = figma.command
 figma.showUI(__html__, { visible: false })
 
+// Simple hash function for license keys (don't store raw keys)
+function hashLicenseKey(key) {
+	try {
+		return String(key).split('').reduce((a,c) => ((a<<5)-a+c.charCodeAt(0))|0, 0).toString(16)
+	} catch (e) {
+		return 'hash-error'
+	}
+}
+
 // Helper function to handle gating for direct menu commands
 function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID) {
 	if (shouldShowCountdown()) {
@@ -349,6 +358,35 @@ Promise.all([
 
 			if (msg.type === 'resetImpression') {
 				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', 0)
+			} else
+			if (msg.type === 'get-license') {
+				// Return stored license data to UI
+				figma.clientStorage.getAsync('LICENSE_V1').then(license => {
+					figma.ui.postMessage({
+						type: 'license-data',
+						license: license || null
+					})
+				})
+			} else
+			if (msg.type === 'activate-license') {
+				// Store license data from UI
+				const licenseData = {
+					licensed: true,
+					productId: msg.productId || 'gumroad',
+					licenseKeyHash: msg.licenseKey ? hashLicenseKey(msg.licenseKey) : null,
+					licenseKey: msg.licenseKey, // Store actual key for display
+					deviceId: UUID,
+					activatedAt: Date.now(),
+					purchase: msg.purchase || {}
+				}
+				
+				figma.clientStorage.setAsync('LICENSE_V1', licenseData)
+				figma.notify('License activated successfully!')
+			} else
+			if (msg.type === 'remove-license') {
+				// Remove stored license
+				figma.clientStorage.setAsync('LICENSE_V1', null)
+				figma.notify('License unlinked successfully!')
 			}
 		}
 	}

@@ -1,0 +1,107 @@
+/* LICENSE VIEW - Following project styling patterns */
+
+v-license {
+  display: block;
+  padding: 16px;
+}
+
+v-license .license-container {
+  text-align: center;
+  padding: 24px 0;
+}
+
+v-license h1 {
+  font: var(--type-large-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+v-license p {
+  font: var(--type-medium-normal);
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+v-license .license-form {
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+v-license .license-input {
+  margin-bottom: 16px;
+}
+
+v-license .license-status {
+  font: var(--type-small-normal);
+  margin: 8px 0;
+  min-height: 16px;
+}
+
+v-license .license-status.success {
+  color: var(--color-text-success, #00aa00);
+}
+
+v-license .license-status.error {
+  color: var(--color-text-danger, #ff0000);
+}
+
+v-license .button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+v-license .button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+v-license .license-info {
+  background: var(--color-bg-secondary, #f5f5f5);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+v-license .license-detail {
+  font: var(--type-small-normal);
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+v-license .license-detail:last-child {
+  margin-bottom: 0;
+}
+
+v-license .license-detail strong {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+v-license .support-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+v-license .support-section p {
+  font: var(--type-small-normal);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+v-license .support-section a {
+  color: var(--color-text-brand, #18a0fb);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+v-license .support-section a:hover {
+  text-decoration: underline;
+}
+
+v-license .license-info + .button {
+  margin-top: 20px;
+  width: 100%;
+}

@@ -8,7 +8,8 @@
 		"allowedDomains": [
 			"https://*.amplitude.com",
 			"https://*.netlify.app/",
-			"https://rsms.me/"
+			"https://rsms.me/",
+			"https://api.gumroad.com"
 		]
 	},
 	"menu": [
@@ -18,7 +19,7 @@
 		{"name": "Pager", "command": "pager"},
 		{"name": "Run all", "command": "all"},
 		{"separator": true},
-		{"name": "Run custom...", "command": "options"}
+		{"name": "Open plugin (custom run)...", "command": "options"}
 	],
 	"editorType": ["figma", "figjam"]
 }
