@@ -1,5 +1,5 @@
 import Tracking from 'src/utils/Tracking'
-import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
+import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
 
 const UI_HEIGHT = 540
 
@@ -52,6 +52,7 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID)
 	} else {
 		// Execute immediately if licensed
 		executeCommand()
+		figma.closePlugin()
 	}
 }
 
@@ -226,19 +227,21 @@ function cmdPager(pager_variable) {
 
 }
 
-// Obtain UUID and preferences then trigger init event
+// Obtain UUID, preferences, and license then trigger init event
 Promise.all([
 	figma.clientStorage.getAsync('UUID'),
 	figma.clientStorage.getAsync('preferences'),
 	figma.clientStorage.getAsync('AD_LAST_SHOWN_DATE'),
 	figma.clientStorage.getAsync('AD_LAST_SHOWN_IMPRESSION'),
-	figma.clientStorage.getAsync('spacing') // legacy
+	figma.clientStorage.getAsync('spacing'), // legacy
+	figma.clientStorage.getAsync('LICENSE_V1') // license data
 ]).then(values => {
 	let UUID = values[0]
 	let preferences = values[1]
 	let AD_LAST_SHOWN_DATE = values[2] || 572083200 // initial date, if no date was saved previously
 	let AD_LAST_SHOWN_IMPRESSION = values[3] || 0 // initial impressions
 	let spacing = values[4]
+	let license = values[5] // license data
 
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
@@ -258,6 +261,9 @@ Promise.all([
 		UUID = Tracking.createUUID()
 		figma.clientStorage.setAsync('UUID', UUID)
 	}
+
+	// Cache license status for gate decisions
+	setCachedLicenseStatus(license)
 
 	// legacy spacing preference
 	if (typeof spacing != 'undefined') {
@@ -381,11 +387,13 @@ Promise.all([
 				}
 				
 				figma.clientStorage.setAsync('LICENSE_V1', licenseData)
+				setCachedLicenseStatus(licenseData) // Update cache
 				figma.notify('License activated successfully!')
 			} else
 			if (msg.type === 'remove-license') {
 				// Remove stored license
 				figma.clientStorage.setAsync('LICENSE_V1', null)
+				setCachedLicenseStatus(null) // Update cache
 				figma.notify('License unlinked successfully!')
 			}
 		}

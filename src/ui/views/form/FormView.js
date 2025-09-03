@@ -3,7 +3,7 @@ import './FormView.css'
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
 import Router from 'src/utils/Router'
-import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
+import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
 
 class FormView extends Element {
 
