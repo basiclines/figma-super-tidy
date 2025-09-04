@@ -1,8 +1,14 @@
 import './LicenseView.css'
 import Element from 'src/ui/Element'
 import Tracking from 'src/utils/Tracking'
-
-const GUMROAD_PRODUCT_ID = 'WAwyZR5nPmxDKE6_y3rjog=='
+import { 
+	verifyGumroadLicense, 
+	decrementLicenseUsage, 
+	getStoredLicense, 
+	activateLicense, 
+	removeLicense, 
+	createLicenseInfo 
+} from 'src/payments/license'
 
 class LicenseView extends Element {
 
@@ -17,7 +23,7 @@ class LicenseView extends Element {
 
 	loadCurrentLicense() {
 		// Check if user already has a license
-		this.getStoredLicense()
+		getStoredLicense()
 			.then(license => {
 				if (license && license.licensed) {
 					this.data.isLicensed = true
@@ -34,102 +40,6 @@ class LicenseView extends Element {
 			})
 	}
 
-	getStoredLicense() {
-		// This would normally use figma.clientStorage, but we're in UI context
-		// We'll need to request this from Core.js via postMessage
-		return new Promise((resolve) => {
-			parent.postMessage({ 
-				pluginMessage: { type: 'get-license' } 
-			}, '*')
-			
-			// Listen for response (simplified for now)
-			const handler = (e) => {
-				const msg = e.data.pluginMessage
-				if (msg.type === 'license-data') {
-					window.removeEventListener('message', handler)
-					resolve(msg.license)
-				}
-			}
-			window.addEventListener('message', handler)
-			
-			// Timeout after 1 second
-			setTimeout(() => {
-				window.removeEventListener('message', handler)
-				resolve(null)
-			}, 1000)
-		})
-	}
-
-	verifyGumroadLicense(licenseKey) {
-		// First check usage without incrementing
-		return fetch('https://api.gumroad.com/v2/licenses/verify', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams({
-				product_id: GUMROAD_PRODUCT_ID,
-				license_key: licenseKey,
-				increment_uses_count: 'false' // Check first without incrementing
-			})
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (!data.success) {
-				return { ok: false, error: 'Invalid license key' }
-			}
-			
-			const purchase = data.purchase || {}
-			if (purchase.refunded || purchase.chargebacked || purchase.license_disabled) {
-				return { ok: false, error: 'License is no longer valid' }
-			}
-			
-			// Check usage limit (max 2 devices: work and personal)
-			const currentUses = data.uses || 0
-			if (currentUses >= 2) {
-				return { 
-					ok: false, 
-					error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.' 
-				}
-			}
-			
-			// If under limit, increment usage and return success
-			return this.incrementLicenseUsage(licenseKey)
-				.then(incrementResult => {
-					if (incrementResult.ok) {
-						return { ok: true, purchase: incrementResult.purchase, uses: incrementResult.uses }
-					} else {
-						return { ok: false, error: 'Failed to activate license. Please try again.' }
-					}
-				})
-		})
-		.catch(error => {
-			return { ok: false, error: 'Unable to verify license. Please check your connection.' }
-		})
-	}
-
-	incrementLicenseUsage(licenseKey) {
-		// Increment usage count for this activation
-		return fetch('https://api.gumroad.com/v2/licenses/verify', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams({
-				product_id: GUMROAD_PRODUCT_ID,
-				license_key: licenseKey,
-				increment_uses_count: 'true' // Actually increment this time
-			})
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				return { ok: true, purchase: data.purchase, uses: data.uses }
-			} else {
-				return { ok: false }
-			}
-		})
-		.catch(error => {
-			return { ok: false }
-		})
-	}
-
 	activateLicense() {
 		const licenseInput = this.find('#license-key')
 		const licenseKey = licenseInput.value.trim()
@@ -144,27 +54,15 @@ class LicenseView extends Element {
 		this.data.statusType = ''
 		this.render()
 		
-		this.verifyGumroadLicense(licenseKey)
+		verifyGumroadLicense(licenseKey)
 			.then(result => {
 				if (result.ok) {
 					// Send license data to Core.js for storage
-					parent.postMessage({
-						pluginMessage: {
-							type: 'activate-license',
-							licenseKey: licenseKey,
-							purchase: result.purchase
-						}
-					}, '*')
+					activateLicense(licenseKey, result.purchase, result.uses)
 					
 					// Update state to show licensed view
 					this.data.isLicensed = true
-					this.data.licenseInfo = {
-						licensed: true,
-						purchase: result.purchase,
-						activatedAt: Date.now(),
-						licenseKey: licenseKey, // Store the actual license key for display
-						uses: result.uses || 1 // Store current usage count
-					}
+					this.data.licenseInfo = createLicenseInfo(licenseKey, result.purchase, result.uses)
 					
 					Tracking.track('licenseActivated', { email: result.purchase.email })
 				} else {
@@ -193,34 +91,6 @@ class LicenseView extends Element {
 		Tracking.track('supportFormOpened')
 	}
 
-	decrementLicenseUsage(licenseKey) {
-		// Use Netlify function proxy instead of direct Gumroad API
-		return fetch('https://figma-plugins-display-network.netlify.app/api/licenses/decrement_uses_count', {
-			method: 'PUT',
-			headers: { 
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				license_key: licenseKey,
-				product_id: GUMROAD_PRODUCT_ID
-			})
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				console.log('[LicenseView] Usage count decremented successfully, uses now:', data.uses)
-				return { ok: true, uses: data.uses }
-			} else {
-				console.warn('[LicenseView] Failed to decrement usage count:', data.message || data.error)
-				return { ok: false, error: data.message || data.error }
-			}
-		})
-		.catch(error => {
-			console.warn('[LicenseView] Failed to decrement usage count:', error)
-			return { ok: false, error: 'Network error' }
-		})
-	}
-
 	unlinkLicense() {
 		console.log('[LicenseView] Unlinking license')
 		
@@ -228,7 +98,7 @@ class LicenseView extends Element {
 		
 		if (licenseKey) {
 			// First decrement the usage count on Gumroad
-			this.decrementLicenseUsage(licenseKey)
+			decrementLicenseUsage(licenseKey)
 				.then(result => {
 					if (result.ok) {
 						console.log('[LicenseView] Usage count decremented successfully')
@@ -239,9 +109,7 @@ class LicenseView extends Element {
 		}
 		
 		// Send message to Core.js to remove license
-		parent.postMessage({
-			pluginMessage: { type: 'remove-license' }
-		}, '*')
+		removeLicense()
 		
 		// Update local state
 		this.data.isLicensed = false
