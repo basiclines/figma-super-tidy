@@ -44,7 +44,8 @@ module.exports = (env, argv) => ({
 	plugins: [
 		new webpack.DefinePlugin({
 			'WP_ENV': JSON.stringify(process.env.NODE_ENV),
-			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY)
+			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY),
+			'WP_GUMROAD_ACCESS_TOKEN': JSON.stringify(secrets.GUMROAD_ACCESS_TOKEN)
 		}),
 		new HtmlWebpackPlugin({
 			templateContent: `<root-ui></root-ui>`,

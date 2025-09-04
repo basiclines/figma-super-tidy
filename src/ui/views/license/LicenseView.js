@@ -57,13 +57,14 @@ class LicenseView extends Element {
 	}
 
 	verifyGumroadLicense(licenseKey) {
+		// First check usage without incrementing
 		return fetch('https://api.gumroad.com/v2/licenses/verify', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: new URLSearchParams({
 				product_id: GUMROAD_PRODUCT_ID,
 				license_key: licenseKey,
-				increment_uses_count: true
+				increment_uses_count: 'false' // Check first without incrementing
 			})
 		})
 		.then(response => response.json())
@@ -77,10 +78,51 @@ class LicenseView extends Element {
 				return { ok: false, error: 'License is no longer valid' }
 			}
 			
-			return { ok: true, purchase }
+			// Check usage limit (max 2 devices: work and personal)
+			const currentUses = data.uses || 0
+			if (currentUses >= 2) {
+				return { 
+					ok: false, 
+					error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.' 
+				}
+			}
+			
+			// If under limit, increment usage and return success
+			return this.incrementLicenseUsage(licenseKey)
+				.then(incrementResult => {
+					if (incrementResult.ok) {
+						return { ok: true, purchase: incrementResult.purchase }
+					} else {
+						return { ok: false, error: 'Failed to activate license. Please try again.' }
+					}
+				})
 		})
 		.catch(error => {
 			return { ok: false, error: 'Unable to verify license. Please check your connection.' }
+		})
+	}
+
+	incrementLicenseUsage(licenseKey) {
+		// Increment usage count for this activation
+		return fetch('https://api.gumroad.com/v2/licenses/verify', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: new URLSearchParams({
+				product_id: GUMROAD_PRODUCT_ID,
+				license_key: licenseKey,
+				increment_uses_count: 'true' // Actually increment this time
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				return { ok: true, purchase: data.purchase }
+			} else {
+				return { ok: false }
+			}
+		})
+		.catch(error => {
+			return { ok: false }
 		})
 	}
 
@@ -146,8 +188,51 @@ class LicenseView extends Element {
 		Tracking.track('supportFormOpened')
 	}
 
+	decrementLicenseUsage(licenseKey) {
+		// Fixed: Match the working cURL format exactly
+		return fetch('https://api.gumroad.com/v2/licenses/decrement_uses_count', {
+			method: 'PUT',
+			headers: { 
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${WP_GUMROAD_ACCESS_TOKEN}` // ← Token only in header
+			},
+			body: JSON.stringify({
+				product_id: GUMROAD_PRODUCT_ID,  // ← No access_token in body
+				license_key: licenseKey
+			})
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				console.log('[LicenseView] Usage count decremented successfully, uses now:', data.uses)
+				return { ok: true, uses: data.uses }
+			} else {
+				console.warn('[LicenseView] Failed to decrement usage count:', data.message)
+				return { ok: false, error: data.message }
+			}
+		})
+		.catch(error => {
+			console.warn('[LicenseView] Failed to decrement usage count:', error)
+			return { ok: false, error: 'Network error' }
+		})
+	}
+
 	unlinkLicense() {
 		console.log('[LicenseView] Unlinking license')
+		
+		const licenseKey = this.data.licenseInfo ? this.data.licenseInfo.licenseKey : null
+		
+		if (licenseKey) {
+			// First decrement the usage count on Gumroad
+			this.decrementLicenseUsage(licenseKey)
+				.then(result => {
+					if (result.ok) {
+						console.log('[LicenseView] Usage count decremented successfully')
+					} else {
+						console.warn('[LicenseView] Failed to decrement usage count, but proceeding with unlink')
+					}
+				})
+		}
 		
 		// Send message to Core.js to remove license
 		parent.postMessage({
@@ -210,16 +295,20 @@ class LicenseView extends Element {
 						<strong>Activated</strong><br/>
 						${activatedDate}
 					</div>
+					<div class="license-detail">
+						<strong>Device Limit</strong><br/>
+						2 devices (work and personal)
+					</div>
 				</div>
 				
 				<button 
 					id="unlink-license" 
 					class="button button--secondary"
 				>
-					Unlink License
+					Unlink from this device
 				</button>
 				<p class="license-info-hint">
-					Unlink your license to return to the free plan.
+					Unlinking will free up a device slot and return this device to the free plan.
 				</p>
 				
 				${this.renderSupportSection()}
