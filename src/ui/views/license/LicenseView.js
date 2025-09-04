@@ -94,7 +94,8 @@ class LicenseView extends Element {
 		}
 		
 		this.data.isValidating = true
-		this.showStatus('Validating license...', '')
+		this.data.statusMessage = '' // Clear any previous error messages
+		this.data.statusType = ''
 		this.render()
 		
 		this.verifyGumroadLicense(licenseKey)
@@ -191,20 +192,23 @@ class LicenseView extends Element {
 		
 		return `
 			<div class="license-container">
-				<h1>Super Tidy Pro Activated</h1>
+				<h1>Super Tidy Pro</h1>
 				<p>
-					Your license is active! You can now run all commands instantly without any countdown delays.
+					You can now run all commands instantly without any countdown delays.
 				</p>
 				
 				<div class="license-info">
 					<div class="license-detail">
-						<strong>Licensed to:</strong> ${email}
+						<strong>Licensed to</strong><br/>
+						${email}
 					</div>
 					<div class="license-detail">
-						<strong>License Key:</strong> ${licenseKey}
+						<strong>License Key</strong><br/>
+						${licenseKey}
 					</div>
 					<div class="license-detail">
-						<strong>Activated:</strong> ${activatedDate}
+						<strong>Activated</strong><br/>
+						${activatedDate}
 					</div>
 				</div>
 				
@@ -214,6 +218,9 @@ class LicenseView extends Element {
 				>
 					Unlink License
 				</button>
+				<p class="license-info-hint">
+					Unlink your license to return to the free plan.
+				</p>
 				
 				${this.renderSupportSection()}
 			</div>
@@ -225,7 +232,7 @@ class LicenseView extends Element {
 			<div class="license-container">
 				<h1>Activate Super Tidy Pro</h1>
 				<p>
-					Enter your license key from Gumroad to unlock instant runs and skip all countdowns.
+					Enter your license key to unlock instant runs and skip all countdowns.
 				</p>
 				
 				<form id="license-form" class="license-form">
@@ -239,17 +246,19 @@ class LicenseView extends Element {
 						>
 					</div>
 					
+					<button 
+					type="submit" 
+					class="button button--primary"
+					${this.data.isValidating ? 'disabled' : ''}
+					>
+					${this.data.isValidating ? 'Validating...' : 'Activate'}
+					</button>
+					
+					${this.data.statusType === 'error' ? `
 					<div class="license-status ${this.data.statusType}">
 						${this.data.statusMessage}
 					</div>
-					
-					<button 
-						type="submit" 
-						class="button button--primary"
-						${this.data.isValidating ? 'disabled' : ''}
-					>
-						${this.data.isValidating ? 'Validating...' : 'Activate'}
-					</button>
+					` : ''}
 				</form>
 				
 				${this.renderSupportSection()}

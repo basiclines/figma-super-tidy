@@ -19,17 +19,21 @@ v-license h1 {
 v-license p {
   font: var(--type-medium-normal);
   color: var(--color-text-secondary);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   line-height: 1.4;
 }
 
 v-license .license-form {
   max-width: 280px;
   margin: 0 auto;
+  padding-bottom: 0;
 }
 
 v-license .license-input {
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+}
+v-license .license-input input {
+  border-color: var(--color-separator);
 }
 
 v-license .license-status {
@@ -60,7 +64,7 @@ v-license .license-info {
   background: var(--color-bg-secondary, #f5f5f5);
   border-radius: 4px;
   padding: 16px;
-  margin: 20px 0;
+  margin: 20px 0 0;
   text-align: left;
 }
 
@@ -79,10 +83,14 @@ v-license .license-detail strong {
   color: var(--color-text-primary);
 }
 
+v-license .license-info-hint {
+  font: var(--type-small-normal);
+  color: var(--color-text-secondary);
+  margin: 12px 0 0;
+}
+
 v-license .support-section {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border, #e0e0e0);
+  margin-top: 12px;
 }
 
 v-license .support-section p {

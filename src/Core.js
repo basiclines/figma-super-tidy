@@ -397,13 +397,12 @@ Promise.all([
 				
 				figma.clientStorage.setAsync('LICENSE_V1', licenseData)
 				setCachedLicenseStatus(licenseData) // Update cache
-				figma.notify('License activated successfully!')
+				figma.notify('You now have Super Tidy Pro')
 			} else
 			if (msg.type === 'remove-license') {
 				// Remove stored license
 				figma.clientStorage.setAsync('LICENSE_V1', null)
 				setCachedLicenseStatus(null) // Update cache
-				figma.notify('License unlinked successfully!')
 			}
 		}
 	}
