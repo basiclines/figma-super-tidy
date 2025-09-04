@@ -189,16 +189,15 @@ class LicenseView extends Element {
 	}
 
 	decrementLicenseUsage(licenseKey) {
-		// Fixed: Match the working cURL format exactly
-		return fetch('https://api.gumroad.com/v2/licenses/decrement_uses_count', {
+		// Use Netlify function proxy instead of direct Gumroad API
+		return fetch('https://figma-plugins-display-network.netlify.app/api/licenses/decrement_uses_count', {
 			method: 'PUT',
 			headers: { 
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${WP_GUMROAD_ACCESS_TOKEN}` // ← Token only in header
+				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				product_id: GUMROAD_PRODUCT_ID,  // ← No access_token in body
-				license_key: licenseKey
+				license_key: licenseKey,
+				product_id: GUMROAD_PRODUCT_ID
 			})
 		})
 		.then(response => response.json())
@@ -207,8 +206,8 @@ class LicenseView extends Element {
 				console.log('[LicenseView] Usage count decremented successfully, uses now:', data.uses)
 				return { ok: true, uses: data.uses }
 			} else {
-				console.warn('[LicenseView] Failed to decrement usage count:', data.message)
-				return { ok: false, error: data.message }
+				console.warn('[LicenseView] Failed to decrement usage count:', data.message || data.error)
+				return { ok: false, error: data.message || data.error }
 			}
 		})
 		.catch(error => {
