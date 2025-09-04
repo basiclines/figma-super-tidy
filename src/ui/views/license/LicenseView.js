@@ -22,6 +22,10 @@ class LicenseView extends Element {
 				if (license && license.licensed) {
 					this.data.isLicensed = true
 					this.data.licenseInfo = license
+					// If no uses info is stored, default to 1 (this device)
+					if (!this.data.licenseInfo.uses) {
+						this.data.licenseInfo.uses = 1
+					}
 					this.render()
 				}
 			})
@@ -91,7 +95,7 @@ class LicenseView extends Element {
 			return this.incrementLicenseUsage(licenseKey)
 				.then(incrementResult => {
 					if (incrementResult.ok) {
-						return { ok: true, purchase: incrementResult.purchase }
+						return { ok: true, purchase: incrementResult.purchase, uses: incrementResult.uses }
 					} else {
 						return { ok: false, error: 'Failed to activate license. Please try again.' }
 					}
@@ -116,7 +120,7 @@ class LicenseView extends Element {
 		.then(response => response.json())
 		.then(data => {
 			if (data.success) {
-				return { ok: true, purchase: data.purchase }
+				return { ok: true, purchase: data.purchase, uses: data.uses }
 			} else {
 				return { ok: false }
 			}
@@ -158,7 +162,8 @@ class LicenseView extends Element {
 						licensed: true,
 						purchase: result.purchase,
 						activatedAt: Date.now(),
-						licenseKey: licenseKey // Store the actual license key for display
+						licenseKey: licenseKey, // Store the actual license key for display
+						uses: result.uses || 1 // Store current usage count
 					}
 					
 					Tracking.track('licenseActivated', { email: result.purchase.email })
@@ -295,8 +300,8 @@ class LicenseView extends Element {
 						${activatedDate}
 					</div>
 					<div class="license-detail">
-						<strong>Device Limit</strong><br/>
-						2 devices (work and personal)
+						<strong>Device Usage</strong><br/>
+						${this.data.licenseInfo.uses || 1}/2 devices
 					</div>
 				</div>
 				
@@ -307,7 +312,7 @@ class LicenseView extends Element {
 					Unlink from this device
 				</button>
 				<p class="license-info-hint">
-					Unlinking will free up a device slot and return this device to the free plan.
+					Unlinking will return you to the free plan and reset this device usage.
 				</p>
 				
 				${this.renderSupportSection()}
