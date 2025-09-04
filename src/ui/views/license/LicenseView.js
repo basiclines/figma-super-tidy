@@ -2,9 +2,7 @@ import './LicenseView.css'
 import Element from 'src/ui/Element'
 import Tracking from 'src/utils/Tracking'
 
-// TEST LICENSE: 0DB3B914-40FA4C88-93E1C6E3-FCC8E263
 const GUMROAD_PRODUCT_ID = 'WAwyZR5nPmxDKE6_y3rjog=='
-
 
 class LicenseView extends Element {
 

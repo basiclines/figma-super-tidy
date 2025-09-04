@@ -374,6 +374,15 @@ Promise.all([
 					})
 				})
 			} else
+			if (msg.type === 'get-license-for-gate') {
+				// Return license data specifically for gate cache updates
+				figma.clientStorage.getAsync('LICENSE_V1').then(license => {
+					figma.ui.postMessage({
+						type: 'license-data-for-gate',
+						license: license || null
+					})
+				})
+			} else
 			if (msg.type === 'activate-license') {
 				// Store license data from UI
 				const licenseData = {

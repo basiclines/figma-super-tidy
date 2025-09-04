@@ -10,6 +10,25 @@ class FormView extends Element {
 	beforeMount() {
 		// Initialize pending command state
 		this.data.pendingCommand = null
+		
+		// Load license status for gate decisions
+		this.loadLicenseStatus()
+	}
+
+	loadLicenseStatus() {
+		// Request license data from Core.js to update gate cache
+		parent.postMessage({ 
+			pluginMessage: { type: 'get-license-for-gate' } 
+		}, '*')
+		
+		// Listen for license data response
+		window.addEventListener('message', (e) => {
+			const msg = e.data.pluginMessage
+			if (msg.type === 'license-data-for-gate') {
+				setCachedLicenseStatus(msg.license)
+				console.log('[FormView] License status loaded for gate decisions')
+			}
+		})
 	}
 
 	handleEmptyState(selection) {
