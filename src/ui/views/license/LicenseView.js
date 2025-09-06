@@ -1,6 +1,7 @@
 import './LicenseView.css'
 import Element from 'src/ui/Element'
 import Tracking from 'src/utils/Tracking'
+import { setCachedLicenseStatus } from 'src/payments/gate'
 import { 
 	verifyGumroadLicense, 
 	decrementLicenseUsage, 
@@ -60,9 +61,14 @@ class LicenseView extends Element {
 					// Send license data to Core.js for storage
 					activateLicense(licenseKey, result.purchase, result.uses)
 					
+					// IMMEDIATELY update the gate cache to ensure instant effect
+					const licenseData = createLicenseInfo(licenseKey, result.purchase, result.uses)
+					setCachedLicenseStatus(licenseData)
+					console.log('[LicenseView] Gate cache updated immediately:', licenseData)
+					
 					// Update state to show licensed view
 					this.data.isLicensed = true
-					this.data.licenseInfo = createLicenseInfo(licenseKey, result.purchase, result.uses)
+					this.data.licenseInfo = licenseData
 					
 					Tracking.track('licenseActivated', { email: result.purchase.email })
 				} else {
@@ -110,6 +116,10 @@ class LicenseView extends Element {
 		
 		// Send message to Core.js to remove license
 		removeLicense()
+		
+		// IMMEDIATELY clear the gate cache to ensure instant effect
+		setCachedLicenseStatus(null)
+		console.log('[LicenseView] Gate cache cleared immediately')
 		
 		// Update local state
 		this.data.isLicensed = false
