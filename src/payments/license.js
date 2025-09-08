@@ -1,7 +1,7 @@
 // License verification and management API module
 // Handles all Gumroad API interactions and license operations
 
-const GUMROAD_PRODUCT_ID = 'WAwyZR5nPmxDKE6_y3rjog=='
+const GUMROAD_PRODUCT_ID = WP_GUMROAD_PRODUCT_ID
 const MAX_USAGE_LIMIT = 2
 
 /**
