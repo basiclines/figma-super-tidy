@@ -63,9 +63,10 @@
 
 **App.js** (Minimal orchestrator):
 - Handles Core.js messages and initializes views
-- `handleDirectCountdown` calls FormView.startCountdown directly
+- `handleDirectCountdown` navigates to FormView and calls startCountdown directly
 - Router setup excludes countdown route (no longer needed)
-- Removed countdown view from render method
+- Removed CountdownView import and rendering from App.js
+- Direct integration with FormView's embedded countdown functionality
 
 **LicenseView.js** (License management):
 - Dual-state rendering: unlicensed form vs licensed info display
@@ -195,17 +196,26 @@
 1. **Initial**: Countdown as separate route with Router navigation
 2. **Refined**: Gating moved from Core.js to FormView.js for clean separation
 3. **Final**: Countdown embedded within FormView as state, not separate route
+4. **Latest**: Removed Router dependency, App.js directly calls FormView countdown methods
 
 #### **API Integration Challenges**
 1. **Gumroad CORS**: Client-side `decrement_uses_count` blocked by security policies
 2. **Solution**: Netlify Function proxy for authenticated endpoints
 3. **Content-Type**: Some endpoints require `application/x-www-form-urlencoded`
 
+#### **License Storage & Reliability Issues**
+1. **Race Conditions**: FormView event listeners were accumulating without cleanup
+2. **Data Consistency**: Usage count not properly stored during license activation
+3. **Silent Failures**: Storage operations lacked error handling and user feedback
+4. **Solution**: Implemented proper event listener cleanup, comprehensive error handling, and consistent data format
+
 #### **Key Technical Decisions**
 - **Memory over Storage**: License status cached in `gate.js` for performance
 - **Direct Method Calls**: Eliminated internal UI postMessage for simplicity
 - **Callback Pattern**: Unified interface for UI and menu-initiated countdowns
 - **State Management**: LEO Element data properties for countdown state
+- **Event Listener Management**: Proper cleanup to prevent memory leaks and race conditions
+- **Error Handling**: Comprehensive error handling for all storage operations with user feedback
 
 ---
 
@@ -224,6 +234,10 @@
 - [x] Menu command gating for direct Figma menu access
 - [x] License status caching for fast gate decisions
 - [x] Clean architecture with proper separation of concerns
+- [x] Removed Router dependency for countdown navigation
+- [x] Fixed license storage/retrieval race conditions and reliability issues
+- [x] Comprehensive error handling with user feedback for all storage operations
+- [x] Proper event listener cleanup to prevent memory leaks
 
 #### **✅ Tested Scenarios**
 - [x] Licensed user: immediate command execution
@@ -233,15 +247,20 @@
 - [x] Device limits: 2-device enforcement
 - [x] License unlinking: usage count decremented
 - [x] Error handling: invalid keys, API failures
+- [x] License storage reliability: consistent save/load across plugin sessions
+- [x] Memory management: no event listener leaks or race conditions
+- [x] Error recovery: proper user feedback for storage failures
 
 #### **🎯 Production Ready**
 The countdown monetization system is fully implemented and functional, with:
-- Clean user experience (no ghost screens)
-- Robust license management
+- Clean user experience (no ghost screens, embedded countdown)
+- Robust and reliable license management with comprehensive error handling
 - Secure API integration via Netlify proxy
-- Proper error handling and edge cases
+- Proper error handling and edge cases with user feedback
 - Analytics integration (Amplitude)
 - Professional UI/UX matching plugin design system
+- Memory-efficient architecture with proper cleanup
+- Consistent license storage/retrieval across all scenarios
 
 ---
 
@@ -279,9 +298,11 @@ The countdown monetization system is fully implemented and functional, with:
 
 #### **Technical Debt**
 - [ ] Migrate from LEO.js to modern framework (if needed)
-- [ ] Enhanced error handling and retry mechanisms
+- [x] Enhanced error handling and retry mechanisms (COMPLETED)
 - [ ] Automated testing for license flows
 - [ ] Performance optimization for large selections
+- [x] Memory leak prevention and proper cleanup (COMPLETED)
+- [x] Race condition fixes in license management (COMPLETED)
 
 ---
 
