@@ -14,8 +14,6 @@ class CountdownView extends Element {
 	}
 
 	startCountdown(seconds, commandName, onComplete) {
-		console.log(`[CountdownView] Starting countdown: ${seconds}s for ${commandName}`)
-		
 		this.data.seconds = seconds
 		this.data.totalSeconds = seconds
 		this.data.commandName = commandName
@@ -40,8 +38,6 @@ class CountdownView extends Element {
 	}
 
 	finishCountdown() {
-		console.log('[CountdownView] Countdown finished - showing button')
-		
 		// Clear interval
 		if (this.data.intervalId) {
 			clearInterval(this.data.intervalId)
@@ -55,8 +51,6 @@ class CountdownView extends Element {
 	}
 
 	executeCommand() {
-		console.log('[CountdownView] User clicked Run Now button')
-		
 		// Call the completion callback directly
 		if (this.data.onComplete) {
 			this.data.onComplete()

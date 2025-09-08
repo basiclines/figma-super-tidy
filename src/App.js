@@ -20,7 +20,6 @@ class ui extends Element {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
-				console.log(`[App] ${msg.type}:`, this.data.preferences)
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
@@ -55,8 +54,6 @@ class ui extends Element {
 	}
 
 	handleDirectCountdown(seconds, commandName) {
-		console.log(`[App] Handling direct countdown: ${seconds}s for ${commandName}`)
-		
 		// Navigate to index view (FormView) and call startCountdown directly
 		Router.navigate(Router.routes.index)
 		
@@ -89,7 +86,6 @@ class ui extends Element {
 
 	render() {
 		if (!this.data.preferences) return '';
-		console.log('[App] Rendering views')
 		return`
 			<c-toolbar></c-toolbar>
 			<v-form data-view="index" class="view"></v-form>

@@ -30,7 +30,6 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID)
 		figma.showUI(__html__, { width: 360, height: UI_HEIGHT })
 		
 		const seconds = getCountdownSeconds()
-		console.log(`[Core] Starting countdown for direct command ${commandName}: ${seconds}s`)
 		
 		// Send init message first so UI components are ready
 		figma.ui.postMessage({
@@ -52,7 +51,6 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID)
 		// Handle countdown completion
 		figma.ui.onmessage = (msg) => {
 			if (msg.type === 'direct-countdown-complete') {
-				console.log(`[Core] Direct countdown complete, executing ${commandName}`)
 				executeCommand()
 				figma.closePlugin()
 			}
@@ -140,7 +138,6 @@ Promise.all([
 	}
 
 	// Cache license status for gate decisions
-	console.log('[Core] Initializing license cache with:', license)
 	setCachedLicenseStatus(license)
 
 	// legacy spacing preference
@@ -247,7 +244,6 @@ Promise.all([
 				// Return stored license data to UI
 				figma.clientStorage.getAsync('LICENSE_V1')
 					.then(license => {
-						console.log('[Core] Retrieved license for UI:', license ? 'FOUND' : 'NOT FOUND')
 						figma.ui.postMessage({
 							type: 'license-data',
 							license: license || null
@@ -265,7 +261,6 @@ Promise.all([
 				// Return license data specifically for gate cache updates
 				figma.clientStorage.getAsync('LICENSE_V1')
 					.then(license => {
-						console.log('[Core] Retrieved license for gate:', license ? 'FOUND' : 'NOT FOUND')
 						figma.ui.postMessage({
 							type: 'license-data-for-gate',
 							license: license || null
@@ -294,9 +289,8 @@ Promise.all([
 				
 				figma.clientStorage.setAsync('LICENSE_V1', licenseData)
 					.then(() => {
-						console.log('[Core] License data stored successfully:', licenseData)
 						setCachedLicenseStatus(licenseData) // Update cache
-						figma.notify('You now have Super Tidy Pro')
+					figma.notify('You now have Super Tidy Pro')
 					})
 					.catch(error => {
 						console.error('[Core] Failed to store license data:', error)
@@ -307,10 +301,9 @@ Promise.all([
 				// Remove stored license
 				figma.clientStorage.setAsync('LICENSE_V1', null)
 					.then(() => {
-						console.log('[Core] License removed successfully')
 						setCachedLicenseStatus(null) // Update cache
 						figma.notify('License unlinked from this device')
-					})
+						})
 					.catch(error => {
 						console.error('[Core] Failed to remove license:', error)
 						figma.notify('Failed to unlink license. Please try again.')

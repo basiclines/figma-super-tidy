@@ -27,7 +27,6 @@ class FormView extends Element {
 			const msg = e.data.pluginMessage
 			if (msg.type === 'license-data-for-gate') {
 				setCachedLicenseStatus(msg.license)
-				console.log('[FormView] License status loaded for gate decisions')
 				window.removeEventListener('message', handler) // Clean up listener
 			}
 		}
@@ -90,15 +89,12 @@ class FormView extends Element {
 	}
 
 	handleCommandRequest(commandName, options) {
-		console.log(`[FormView] Command request: ${commandName}`, options)
-		
 		if (shouldShowCountdown()) {
 			// Store the command for later execution
 			this.data.pendingCommand = { commandName, options }
 			
 			// Start countdown
 			const seconds = getCountdownSeconds()
-			console.log(`[FormView] Starting countdown: ${seconds}s`)
 			
 			this.startCountdown(seconds, commandName, () => {
 				this.executePendingCommand()
@@ -110,8 +106,6 @@ class FormView extends Element {
 	}
 	
 	startCountdown(seconds, commandName, onComplete) {
-		console.log(`[FormView] Starting embedded countdown: ${seconds}s for ${commandName}`)
-		
 		this.data.showingCountdown = true
 		this.render()
 		
@@ -120,15 +114,12 @@ class FormView extends Element {
 			const countdownView = this.querySelector('v-countdown')
 			if (countdownView && countdownView.startCountdown) {
 				countdownView.startCountdown(seconds, commandName, onComplete)
-			} else {
-				console.error('[FormView] Countdown view not found or not ready')
 			}
 		}, 100)
 	}
 	
 	executePendingCommand() {
 		if (this.data.pendingCommand) {
-			console.log(`[FormView] Executing pending command:`, this.data.pendingCommand)
 			this.executeCommand(this.data.pendingCommand.commandName, this.data.pendingCommand.options)
 			this.data.pendingCommand = null
 			this.data.showingCountdown = false
@@ -137,7 +128,6 @@ class FormView extends Element {
 	}
 	
 	executeCommand(commandName, options) {
-		console.log(`[FormView] Executing command: ${commandName}`, options)
 		// Send command to Core.js
 		parent.postMessage({ 
 			pluginMessage: { 

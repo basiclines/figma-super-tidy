@@ -37,7 +37,7 @@ class LicenseView extends Element {
 				}
 			})
 			.catch(e => {
-				console.log('[LicenseView] No existing license found')
+				// No existing license found
 			})
 	}
 
@@ -98,8 +98,6 @@ class LicenseView extends Element {
 	}
 
 	unlinkLicense() {
-		console.log('[LicenseView] Unlinking license')
-		
 		const licenseKey = this.data.licenseInfo ? this.data.licenseInfo.licenseKey : null
 		
 		if (licenseKey) {
@@ -107,7 +105,7 @@ class LicenseView extends Element {
 			decrementLicenseUsage(licenseKey)
 				.then(result => {
 					if (result.ok) {
-						console.log('[LicenseView] Usage count decremented successfully')
+						// Usage count decremented successfully
 					} else {
 						console.warn('[LicenseView] Failed to decrement usage count, but proceeding with unlink')
 					}
