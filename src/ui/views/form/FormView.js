@@ -2,14 +2,15 @@ import './FormView.css'
 
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
-import Router from 'src/utils/Router'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
+import '../countdown/CountdownView'
 
 class FormView extends Element {
 
 	beforeMount() {
 		// Initialize pending command state
 		this.data.pendingCommand = null
+		this.data.showingCountdown = false
 		
 		// Load license status for gate decisions
 		this.loadLicenseStatus()
@@ -21,14 +22,21 @@ class FormView extends Element {
 			pluginMessage: { type: 'get-license-for-gate' } 
 		}, '*')
 		
-		// Listen for license data response
-		window.addEventListener('message', (e) => {
+		// Listen for license data response (only once)
+		const handler = (e) => {
 			const msg = e.data.pluginMessage
 			if (msg.type === 'license-data-for-gate') {
 				setCachedLicenseStatus(msg.license)
 				console.log('[FormView] License status loaded for gate decisions')
+				window.removeEventListener('message', handler) // Clean up listener
 			}
-		})
+		}
+		window.addEventListener('message', handler)
+		
+		// Timeout cleanup after 2 seconds
+		setTimeout(() => {
+			window.removeEventListener('message', handler)
+		}, 2000)
 	}
 
 	handleEmptyState(selection) {
@@ -92,24 +100,30 @@ class FormView extends Element {
 			const seconds = getCountdownSeconds()
 			console.log(`[FormView] Starting countdown: ${seconds}s`)
 			
-			this.showCountdownView()
-			
-			// Start countdown directly on the countdown view
-			// Wait for the view to be rendered, then start countdown
-			setTimeout(() => {
-				const countdownView = document.querySelector('[data-view="countdown"]')
-				if (countdownView && countdownView.startCountdown) {
-					countdownView.startCountdown(seconds, commandName, () => {
-						this.executePendingCommand()
-					})
-				} else {
-					console.error('[FormView] Countdown view not found or not ready')
-				}
-			}, 100)
+			this.startCountdown(seconds, commandName, () => {
+				this.executePendingCommand()
+			})
 		} else {
 			// Execute immediately if licensed
 			this.executeCommand(commandName, options)
 		}
+	}
+	
+	startCountdown(seconds, commandName, onComplete) {
+		console.log(`[FormView] Starting embedded countdown: ${seconds}s for ${commandName}`)
+		
+		this.data.showingCountdown = true
+		this.render()
+		
+		// Wait for the view to be rendered, then start countdown
+		setTimeout(() => {
+			const countdownView = this.querySelector('v-countdown')
+			if (countdownView && countdownView.startCountdown) {
+				countdownView.startCountdown(seconds, commandName, onComplete)
+			} else {
+				console.error('[FormView] Countdown view not found or not ready')
+			}
+		}, 100)
 	}
 	
 	executePendingCommand() {
@@ -117,7 +131,8 @@ class FormView extends Element {
 			console.log(`[FormView] Executing pending command:`, this.data.pendingCommand)
 			this.executeCommand(this.data.pendingCommand.commandName, this.data.pendingCommand.options)
 			this.data.pendingCommand = null
-			this.showFormView()
+			this.data.showingCountdown = false
+			this.render()
 		}
 	}
 	
@@ -132,17 +147,12 @@ class FormView extends Element {
 		}, '*')
 	}
 
-	showCountdownView() {
-		// Use Router to navigate to countdown view
-		Router.navigate(Router.routes.countdown)
-	}
-
-	showFormView() {
-		// Use Router to navigate back to form view
-		Router.navigate(Router.routes.index)
-	}
 
 	render() {
+		if (this.data.showingCountdown) {
+			return '<v-countdown></v-countdown>'
+		}
+
 		return `
 		<section class="empty-selection" data-select="empty" hidden>
 			<h1 class="type type--11-pos-bold">Empty selection</h1>

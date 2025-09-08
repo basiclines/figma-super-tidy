@@ -9,7 +9,6 @@ import Element from 'src/ui/Element'
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
 import 'src/ui/views/preferences/PreferencesView'
-import 'src/ui/views/countdown/CountdownView'
 import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
@@ -39,7 +38,6 @@ class ui extends Element {
 		Router.setup({
 			index: '#index',
 			preferences: '#preferences',
-			countdown: '#countdown',
 			license: '#license'
 		})
 	}
@@ -59,21 +57,21 @@ class ui extends Element {
 	handleDirectCountdown(seconds, commandName) {
 		console.log(`[App] Handling direct countdown: ${seconds}s for ${commandName}`)
 		
-		// Navigate to countdown view
-		Router.navigate(Router.routes.countdown)
+		// Navigate to index view (FormView) and call startCountdown directly
+		Router.navigate(Router.routes.index)
 		
 		// Wait for the view to be rendered, then start countdown
 		setTimeout(() => {
-			const countdownView = document.querySelector('[data-view="countdown"]')
-			if (countdownView && countdownView.startCountdown) {
-				countdownView.startCountdown(seconds, commandName, () => {
+			const formView = document.querySelector('[data-view="index"]')
+			if (formView && formView.startCountdown) {
+				formView.startCountdown(seconds, commandName, () => {
 					// Send completion message back to Core.js
 					parent.postMessage({ 
 						pluginMessage: { type: 'direct-countdown-complete' } 
 					}, '*')
 				})
 			} else {
-				console.error('[App] Countdown view not found or not ready')
+				console.error('[App] FormView not found or startCountdown method not available')
 			}
 		}, 100)
 	}
@@ -103,7 +101,6 @@ class ui extends Element {
 				wrapinstances="${this.data.preferences.wrap_instances}"
 				renamestrategy="${this.data.preferences.rename_strategy}"
 			></v-preferences>
-			<v-countdown class="view" hidden data-view="countdown"></v-countdown>
 			<v-license class="view" hidden data-view="license"></v-license>
 		`
 	}

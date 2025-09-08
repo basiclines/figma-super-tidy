@@ -156,7 +156,8 @@ export function activateLicense(licenseKey, purchase, uses) {
 		pluginMessage: {
 			type: 'activate-license',
 			licenseKey: licenseKey,
-			purchase: purchase
+			purchase: purchase,
+			uses: uses
 		}
 	}, '*')
 }
