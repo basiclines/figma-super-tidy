@@ -50,6 +50,12 @@ class LicenseView extends Element {
 			return
 		}
 		
+		// Track license validation started
+		Tracking.track('licenseValidationStarted', {
+			keyLength: licenseKey.length,
+			source: 'license-tab'
+		})
+		
 		this.data.isValidating = true
 		this.data.statusMessage = '' // Clear any previous error messages
 		this.data.statusType = ''

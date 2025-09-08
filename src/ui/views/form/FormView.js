@@ -106,6 +106,13 @@ class FormView extends Element {
 	}
 	
 	startCountdown(seconds, commandName, onComplete) {
+		// Track countdown shown
+		Tracking.track('countdownShown', {
+			commandName: commandName,
+			seconds: seconds,
+			trigger: this.data.pendingCommand ? 'ui-form' : 'menu-command'
+		})
+
 		this.data.showingCountdown = true
 		this.render()
 		
@@ -120,6 +127,13 @@ class FormView extends Element {
 	
 	executePendingCommand() {
 		if (this.data.pendingCommand) {
+			// Track command executed after countdown
+			Tracking.track('commandExecutedAfterCountdown', {
+				commandName: this.data.pendingCommand.commandName,
+				options: this.data.pendingCommand.options,
+				userType: 'free'
+			})
+
 			this.executeCommand(this.data.pendingCommand.commandName, this.data.pendingCommand.options)
 			this.data.pendingCommand = null
 			this.data.showingCountdown = false

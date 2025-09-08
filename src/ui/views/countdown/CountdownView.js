@@ -1,5 +1,6 @@
 import './CountdownView.css'
 import Element from 'src/ui/Element'
+import Tracking from 'src/utils/Tracking'
 import './AnalogChronometer'
 
 class CountdownView extends Element {
@@ -38,6 +39,13 @@ class CountdownView extends Element {
 	}
 
 	finishCountdown() {
+		// Track countdown completion
+		Tracking.track('countdownCompleted', {
+			commandName: this.data.commandName,
+			totalSeconds: this.data.totalSeconds,
+			completionRate: 1.0
+		})
+
 		// Clear interval
 		if (this.data.intervalId) {
 			clearInterval(this.data.intervalId)
@@ -51,6 +59,12 @@ class CountdownView extends Element {
 	}
 
 	executeCommand() {
+		// Track "Run Now" button click
+		Tracking.track('runNowClicked', {
+			commandName: this.data.commandName,
+			waitTime: this.data.totalSeconds
+		})
+
 		// Call the completion callback directly
 		if (this.data.onComplete) {
 			this.data.onComplete()
@@ -58,6 +72,13 @@ class CountdownView extends Element {
 	}
 
 	handleGetPro() {
+		// Track "Get Super Tidy Pro" click from countdown
+		Tracking.track('getProClickedFromCountdown', {
+			commandName: this.data.commandName,
+			secondsRemaining: this.data.seconds,
+			source: 'countdown'
+		})
+
 		window.open('https://basiclines.gumroad.com/l/super-tidy-pro', '_blank')
 	}
 
