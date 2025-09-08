@@ -1,0 +1,56 @@
+/* COUNTDOWN VIEW - Following project styling patterns */
+
+v-countdown {
+  display: block;
+  padding: 16px;
+}
+
+v-countdown .countdown-container {
+  text-align: center;
+  padding: 24px 0;
+}
+
+v-countdown h1 {
+  font: var(--type-large-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+v-countdown p {
+  font: var(--type-medium-normal);
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+v-countdown .countdown-timer {
+  font: var(--type-small-bold);
+  color: var(--color-text-secondary);
+  margin: 0;
+  position: relative;
+  top: -32px;
+  left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+v-countdown .countdown-timer-hint {
+  font: var(--type-small-normal);
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+  text-align: center;
+  max-width: 200px;
+  margin: 0 auto 20px;
+}
+
+v-countdown .button {
+  margin: 8px 4px 0;
+  min-width: 120px;
+}
+
+v-countdown .button:first-of-type {
+  margin-left: 0;
+}
+
+v-countdown .button:last-of-type {
+  margin-right: 0;
+}

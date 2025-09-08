@@ -22,12 +22,14 @@ class ToolbarComponent extends Element {
 		let currentView = this.data.currentView
 		let isIndex = (currentView === Router.routes.index || currentView === '' || typeof currentView === 'undefined')
 		let isPreferences = (currentView === Router.routes.preferences)
+		let isLicense = (currentView === Router.routes.license)
 
 		return`
 			<nav data-select="view">
 				<ul data-select="nav">
 					<li class="${(isIndex) ? 'active' : ''}"><a href="${Router.routes.index}">Actions</a></li>
 					<li class="${(isPreferences) ? 'active' : ''}"><a href="${Router.routes.preferences}">Preferences</a></li>
+					<li class="${(isLicense) ? 'active' : ''}"><a href="${Router.routes.license}">License</a></li>
 				</ul>
 			</nav>
 		`

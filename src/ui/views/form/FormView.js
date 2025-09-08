@@ -2,9 +2,41 @@ import './FormView.css'
 
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
-import Router from 'src/utils/Router'
+import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
+import '../countdown/CountdownView'
 
 class FormView extends Element {
+
+	beforeMount() {
+		// Initialize pending command state
+		this.data.pendingCommand = null
+		this.data.showingCountdown = false
+		
+		// Load license status for gate decisions
+		this.loadLicenseStatus()
+	}
+
+	loadLicenseStatus() {
+		// Request license data from Core.js to update gate cache
+		parent.postMessage({ 
+			pluginMessage: { type: 'get-license-for-gate' } 
+		}, '*')
+		
+		// Listen for license data response (only once)
+		const handler = (e) => {
+			const msg = e.data.pluginMessage
+			if (msg.type === 'license-data-for-gate') {
+				setCachedLicenseStatus(msg.license)
+				window.removeEventListener('message', handler) // Clean up listener
+			}
+		}
+		window.addEventListener('message', handler)
+		
+		// Timeout cleanup after 2 seconds
+		setTimeout(() => {
+			window.removeEventListener('message', handler)
+		}, 2000)
+	}
 
 	handleEmptyState(selection) {
 		if (selection.length == 0) {
@@ -33,7 +65,7 @@ class FormView extends Element {
 		var pager_check = document.getElementById('pager_check')
 		var tidy = document.getElementById('tidy')
 
-		function applySuperTidy() {
+		const applySuperTidy = () => {
 			var renamingEnabled = renaming_check.checked;
 			var reorderEnabled = reorder_check.checked;
 			var tidyEnabled = tidy_check.checked;
@@ -46,7 +78,7 @@ class FormView extends Element {
 			}
 
 			Tracking.track('clickApply', options)
-			parent.postMessage({ pluginMessage: { type: 'tidy', options: options } }, '*')
+			this.handleCommandRequest('tidy', options)
 		}
 
 
@@ -56,7 +88,75 @@ class FormView extends Element {
 		}
 	}
 
+	handleCommandRequest(commandName, options) {
+		if (shouldShowCountdown()) {
+			// Store the command for later execution
+			this.data.pendingCommand = { commandName, options }
+			
+			// Start countdown
+			const seconds = getCountdownSeconds()
+			
+			this.startCountdown(seconds, commandName, () => {
+				this.executePendingCommand()
+			})
+		} else {
+			// Execute immediately if licensed
+			this.executeCommand(commandName, options)
+		}
+	}
+	
+	startCountdown(seconds, commandName, onComplete) {
+		// Track countdown shown
+		Tracking.track('countdownShown', {
+			commandName: commandName,
+			seconds: seconds,
+			trigger: this.data.pendingCommand ? 'ui-form' : 'menu-command'
+		})
+
+		this.data.showingCountdown = true
+		this.render()
+		
+		// Wait for the view to be rendered, then start countdown
+		setTimeout(() => {
+			const countdownView = this.querySelector('v-countdown')
+			if (countdownView && countdownView.startCountdown) {
+				countdownView.startCountdown(seconds, commandName, onComplete)
+			}
+		}, 100)
+	}
+	
+	executePendingCommand() {
+		if (this.data.pendingCommand) {
+			// Track command executed after countdown
+			Tracking.track('commandExecutedAfterCountdown', {
+				commandName: this.data.pendingCommand.commandName,
+				options: this.data.pendingCommand.options,
+				userType: 'free'
+			})
+
+			this.executeCommand(this.data.pendingCommand.commandName, this.data.pendingCommand.options)
+			this.data.pendingCommand = null
+			this.data.showingCountdown = false
+			this.render()
+		}
+	}
+	
+	executeCommand(commandName, options) {
+		// Send command to Core.js
+		parent.postMessage({ 
+			pluginMessage: { 
+				type: commandName, 
+				options: options 
+			} 
+		}, '*')
+	}
+
+
 	render() {
+		if (this.data.showingCountdown) {
+			return '<v-countdown></v-countdown>'
+		}
+
 		return `
 		<section class="empty-selection" data-select="empty" hidden>
 			<h1 class="type type--11-pos-bold">Empty selection</h1>

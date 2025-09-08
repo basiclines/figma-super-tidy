@@ -15,25 +15,30 @@ class PreferencesView extends Element {
 		let pager_variable = this.find('#pager_variable').value
 		let wrap_instances = this.find('#wrap_instances').checked
 		let rename_trategy = this.find('#rename_strategy [selected]').getAttribute('data-value')
+		let layout_paradigm = this.find('#layout_paradigm [selected]').getAttribute('data-value')
 
 		let preferences = {
 			spacing: { x: parseInt(x_spacing), y: parseInt(y_spacing) },
 			start_name: starting_name,
 			wrap_instances: wrap_instances,
 			rename_strategy: rename_trategy,
-			pager_variable: pager_variable
+			pager_variable: pager_variable,
+			layout_paradigm: layout_paradigm
 		}
 
-		Tracking.track('clickSavePreferences', preferences)
+		Tracking.track('autoSavePreferences', preferences)
 		parent.postMessage({ pluginMessage: { type: 'preferences', preferences: preferences } }, '*')
-		Router.navigate(Router.routes.index)
 	}
 
 	bind(e) {
-		this.find('#preferences').addEventListener('submit', e => {
-			this.savePreferences()
-			e.preventDefault()
-		})
+		// Auto-save on input changes
+		this.find('#x_spacing').addEventListener('input', () => this.savePreferences())
+		this.find('#y_spacing').addEventListener('input', () => this.savePreferences())
+		this.find('#starting_name').addEventListener('input', () => this.savePreferences())
+		this.find('#pager_variable').addEventListener('input', () => this.savePreferences())
+		this.find('#wrap_instances').addEventListener('change', () => this.savePreferences())
+		this.find('#layout_paradigm').addEventListener('change', () => this.savePreferences())
+		this.find('#rename_strategy').addEventListener('change', () => this.savePreferences())
 	}
 
 	render() {
@@ -61,6 +66,19 @@ class PreferencesView extends Element {
 						</div>
 					</label>
 				</fieldset>
+
+				<div class="fake-label">
+					<strong>Layout</strong>
+					<p>Rows (horizontal flow, good for mobile designs) or Columns (vertical flow, ideal for presentations and wide formats).</p>
+					<c-select id="layout_paradigm">
+						<option value="rows" ${(this.attrs.layoutparadigm == 'rows' || !this.attrs.layoutparadigm) ? 'selected' : ''}>
+							Rows
+						</option>
+						<option value="columns" ${(this.attrs.layoutparadigm == 'columns') ? 'selected' : ''}>
+							Columns
+						</option>
+					</c-select>
+				</div>
 
 				<label>
 					<strong>Wrap instances with frames</strong>
@@ -111,8 +129,6 @@ class PreferencesView extends Element {
 						</option>
 					</c-select>
 				</div>
-
-				<button type="submit" id="save" class="button button--primary">Save</button>
 			</form>
 
 		`
