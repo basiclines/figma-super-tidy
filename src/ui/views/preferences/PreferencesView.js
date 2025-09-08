@@ -26,16 +26,19 @@ class PreferencesView extends Element {
 			layout_paradigm: layout_paradigm
 		}
 
-		Tracking.track('clickSavePreferences', preferences)
+		Tracking.track('autoSavePreferences', preferences)
 		parent.postMessage({ pluginMessage: { type: 'preferences', preferences: preferences } }, '*')
-		Router.navigate(Router.routes.index)
 	}
 
 	bind(e) {
-		this.find('#preferences').addEventListener('submit', e => {
-			this.savePreferences()
-			e.preventDefault()
-		})
+		// Auto-save on input changes
+		this.find('#x_spacing').addEventListener('input', () => this.savePreferences())
+		this.find('#y_spacing').addEventListener('input', () => this.savePreferences())
+		this.find('#starting_name').addEventListener('input', () => this.savePreferences())
+		this.find('#pager_variable').addEventListener('input', () => this.savePreferences())
+		this.find('#wrap_instances').addEventListener('change', () => this.savePreferences())
+		this.find('#layout_paradigm').addEventListener('change', () => this.savePreferences())
+		this.find('#rename_strategy').addEventListener('change', () => this.savePreferences())
 	}
 
 	render() {
@@ -126,7 +129,6 @@ class PreferencesView extends Element {
 						</option>
 					</c-select>
 				</div>
-				<button type="submit" id="save" class="button button--primary">Save</button>
 			</form>
 
 		`
