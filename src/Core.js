@@ -1,5 +1,13 @@
 import Tracking from 'src/utils/Tracking'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
+import { 
+	getNodesGroupedbyPosition, 
+	getNameByPosition, 
+	repositionNodes, 
+	reorderNodes, 
+	applyPagerNumbers, 
+	applyRenameStrategy 
+} from 'src/utils/LayoutUtils'
 
 const UI_HEIGHT = 540
 
@@ -56,175 +64,42 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID)
 	}
 }
 
-function getNodesGroupedbyPosition(nodes) {
-	// Prepare nodes
-	var input_ids = nodes.reduce((acc, item) => {
-		acc.push({ id: item.id, x: item.x, y: item.y, width: item.width, height: item.height, name: item.name })
-		return acc
-	}, [])
 
-	// Sort by X
-	input_ids.sort((current, next) => {
-		return current.x - next.x
-	})
 
-	// Create rows and columns
-	var rows = []
-	input_ids.map(item => {
-		var rowExist = rows.find(row => row.y + item.height/2 > item.y && row.y - item.height/2 < item.y)
-		if (rowExist) {
-			rowExist.columns.push(item)
-		} else {
-			rows.push({ y: item.y, columns: [item] })
-		}
-	})
-
-	// Sort by Y
-	return rows.sort((current, next) => current.y - next.y);
-}
-
-function getNameByPosition(row, col, startName) {
-
-	var padLength = startName.length
-	var parseStartName = parseInt(startName)
-	var rowName = parseStartName + row * Math.pow(10, padLength - 1)
-	var colName = rowName + col
-	var name = ''
-
-	function zeroPad(num, places) {
-		var zero = places - num.toString().length + 1;
-		return Array(+(zero > 0 && zero)).join("0") + num;
-	}
-
-	if (col == 0) {
-		name = (row == 0) ? zeroPad(rowName, padLength) : rowName.toString();
-	} else {
-		name = (row == 0) ? zeroPad(colName, padLength) : colName.toString();
-	}
-
-	return name
-}
-
-function cmdRename(renameStrategy, startName) {
+function cmdRename(renameStrategy, startName, layoutParadigm = 'rows') {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
-	var groupedNodes = getNodesGroupedbyPosition(selection)
+	var groupedNodes = getNodesGroupedbyPosition(selection, layoutParadigm)
 
-	groupedNodes.forEach((row, rowidx) => {
-		row.columns.forEach((col, colidx) => {
-			var name = getNameByPosition(rowidx, colidx, startName)
-			var match = allNodes.find(node => node.id === col.id)
-
-			if (renameStrategy == 'merge') {
-				match.name = `${name}_${match.name}`
-			} else
-			if (renameStrategy == 'replace') {
-				match.name = name
-			}
-		})
-	})
+	applyRenameStrategy(groupedNodes, layoutParadigm, renameStrategy, startName, allNodes)
 }
 
-function cmdReorder() {
+function cmdReorder(layoutParadigm = 'rows') {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
-	var groupedNodes = getNodesGroupedbyPosition(selection)
+	var groupedNodes = getNodesGroupedbyPosition(selection, layoutParadigm)
 
-	groupedNodes.reverse().forEach(row => {
-		row.columns.reverse().forEach(col => {
-			var match = allNodes.find(node => node.id === col.id)
-			parent.appendChild(match)
-		})
-	})
+	reorderNodes(groupedNodes, layoutParadigm, parent, allNodes)
 }
 
-function cmdTidy(xSpacing, ySpacing, wrapInstances) {
+function cmdTidy(xSpacing, ySpacing, wrapInstances, layoutParadigm = 'rows') {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
-	var groupedNodes = getNodesGroupedbyPosition(selection)
+	var groupedNodes = getNodesGroupedbyPosition(selection, layoutParadigm)
 
-	var x0 = 0
-	var y0 = 0
-	var xPos = 0
-	var yPos = 0
-	var tallestInRow = []
-
-	// Store tallest node per row
-	groupedNodes.forEach((row, rowidx) => {
-		let sortedRowColumns = row.columns.slice()
-		sortedRowColumns.sort((prev, next) => {
-			return (prev.height > next.height) ? -1 : 1;
-		})
-		tallestInRow.push(sortedRowColumns[0].height)
-	})
-
-	// Reposition nodes
-	groupedNodes.forEach((row, rowidx) => {
-		row.columns.forEach((col, colidx) => {
-			if (rowidx == 0 && colidx == 0) {
-				x0 = col.x
-				y0 = col.y
-				xPos = col.x
-				yPos = col.y
-			}
-			var match = allNodes.find(node => node.id === col.id)
-			var newXPos =	(colidx == 0) ? xPos : xPos + xSpacing;
-			var newYPos = yPos
-
-			// Wrap instances with a frame around
-			if (wrapInstances && match.type == 'INSTANCE') {
-				var instanceParent = figma.createFrame()
-				instanceParent.x = newXPos
-				instanceParent.y = newYPos
-				instanceParent.resize(match.width, match.height)
-				instanceParent.appendChild(match)
-				match.x = 0
-				match.y = 0
-				figma.currentPage.selection = figma.currentPage.selection.concat(instanceParent)
-			} else {
-				match.x = newXPos
-				match.y = newYPos
-			}
-
-			xPos = newXPos + match.width
-		})
-
-		xPos = x0
-		yPos = yPos + (tallestInRow[rowidx] + ySpacing)
-	})
+	repositionNodes(groupedNodes, xSpacing, ySpacing, wrapInstances, layoutParadigm, allNodes)
 }
 
-function cmdPager(pager_variable) {
+function cmdPager(pager_variable, layoutParadigm = 'rows') {
 	var selection = figma.currentPage.selection
 	var parent = (selection[0].type == 'PAGE') ? figma.currentPage : selection[0].parent
 	var allNodes = parent.children
-	var groupedNodes = getNodesGroupedbyPosition(selection)
-	var frameIndex = 0
+	var groupedNodes = getNodesGroupedbyPosition(selection, layoutParadigm)
 
-	function searchPagerNodes(node, idx) {
-		if (typeof node.children != 'undefined') {
-			node.children.forEach(child => {
-				searchPagerNodes(child, idx)
-			})
-		} else if (node.type == 'TEXT' && node.name == pager_variable) {
-			var font = node.fontName
-			figma.loadFontAsync(font).then(() => {
-				node.characters = idx.toString()
-			})
-		}
-	}
-
-	groupedNodes.forEach(row => {
-		row.columns.forEach(col => {
-			var frame = allNodes.find(node => node.id === col.id)
-			searchPagerNodes(frame, frameIndex)
-			++frameIndex
-		})
-	})
-
+	applyPagerNumbers(groupedNodes, layoutParadigm, pager_variable, allNodes)
 }
 
 // Obtain UUID, preferences, and license then trigger init event
@@ -249,12 +124,14 @@ Promise.all([
 	let WRAP_INSTANCES = true
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
+	let LAYOUT_PARADIGM = 'rows'
 	let PREFERENCES = {
 		spacing: SPACING,
 		start_name: START_NAME,
 		pager_variable: PAGER_VARIABLE,
 		wrap_instances: WRAP_INSTANCES,
-		rename_strategy: RENAME_STRATEGY_REPLACE
+		rename_strategy: RENAME_STRATEGY_REPLACE,
+		layout_paradigm: LAYOUT_PARADIGM
 	}
 
 	if (!UUID) {
@@ -286,38 +163,38 @@ Promise.all([
 	if (cmd == 'rename') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('rename', () => {
-			cmdRename(preferences.rename_strategy, preferences.start_name)
+			cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Rename')
 		}, preferences, UUID)
 	} else
 	if (cmd == 'reorder') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('reorder', () => {
-			cmdReorder()
+			cmdReorder(preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Reorder')
 		}, preferences, UUID)
 	} else
 	if (cmd == 'tidy') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('tidy', () => {
-			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
+			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Tidy')
 		}, preferences, UUID)
 	} else
 	if (cmd == 'pager') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('pager', () => {
-			cmdPager(preferences.pager_variable)
+			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Pager')
 		}, preferences, UUID)
 	} else
 	if (cmd == 'all') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('all', () => {
-			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
-			cmdReorder()
-			cmdRename(preferences.rename_strategy, preferences.start_name)
-			cmdPager(preferences.pager_variable)
+			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
+			cmdReorder(preferences.layout_paradigm || 'rows')
+			cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
+			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy')
 		}, preferences, UUID)
 	} else
@@ -345,10 +222,10 @@ Promise.all([
 				var TIDY_ENABLED = msg.options.tidy
 				var PAGER_ENABLED = msg.options.pager
 
-				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances)
-				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name)
-				if (REORDER_ENABLED) cmdReorder()
-				if (PAGER_ENABLED) cmdPager(preferences.pager_variable)
+				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
+				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
+				if (REORDER_ENABLED) cmdReorder(preferences.layout_paradigm || 'rows')
+				if (PAGER_ENABLED) cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 				figma.notify('Super Tidy')
 				setTimeout(() => figma.closePlugin(), 100)
 			} else

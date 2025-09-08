@@ -100,6 +100,7 @@ class ui extends Element {
 				pager_variable="${this.data.preferences.pager_variable}"
 				wrapinstances="${this.data.preferences.wrap_instances}"
 				renamestrategy="${this.data.preferences.rename_strategy}"
+				layoutparadigm="${this.data.preferences.layout_paradigm || 'rows'}"
 			></v-preferences>
 			<v-license class="view" hidden data-view="license"></v-license>
 		`
