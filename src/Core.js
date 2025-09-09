@@ -1,5 +1,6 @@
 import Tracking from 'src/utils/Tracking'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
+import { validateLicenseOnly } from 'src/payments/license'
 import { 
 	getNodesGroupedbyPosition, 
 	getNameByPosition, 
@@ -100,6 +101,49 @@ function cmdPager(pager_variable, layoutParadigm = 'rows') {
 	applyPagerNumbers(groupedNodes, layoutParadigm, pager_variable, allNodes)
 }
 
+/**
+ * Validates stored license on startup without blocking initialization
+ * If license is invalid or exceeds device limits, unlinks it and notifies user
+ * @param {object} license - The stored license data
+ */
+function validateStoredLicense(license) {
+	if (!license || !license.licensed || !license.licenseKey) {
+		return Promise.resolve() // No license to validate
+	}
+	
+	console.log('[Core] Validating stored license on startup...')
+	
+	return validateLicenseOnly(license.licenseKey)
+		.then(result => {
+			if (!result.ok) {
+				// Only invalidate license if we got a clear license error from the API
+				if (result.isLicenseError) {
+					console.warn('[Core] License is invalid according to API:', result.error)
+					
+					// Unlink invalid license
+					return figma.clientStorage.setAsync('LICENSE_V1', null)
+						.then(() => {
+							setCachedLicenseStatus(null)
+							// Notify user with clear message
+							figma.notify(`License unlinked: ${result.error}. Please reactivate in the License tab.`)
+						})
+				} else if (result.isNetworkError) {
+					console.warn('[Core] Network error during license validation, keeping license active:', result.error)
+					// Don't invalidate license on network errors - maintain optimistic UI
+				} else {
+					console.warn('[Core] Unknown error during license validation, keeping license active:', result.error)
+					// For any unknown errors, keep license active to avoid false invalidation
+				}
+			} else {
+				console.log('[Core] Stored license validated successfully')
+			}
+		})
+		.catch(error => {
+			console.warn('[Core] Unexpected error during license validation, keeping license active:', error)
+			// This catch should rarely be hit now, but if it is, keep license active
+		})
+}
+
 // Obtain UUID, preferences, and license then trigger init event
 Promise.all([
 	figma.clientStorage.getAsync('UUID'),
@@ -139,6 +183,13 @@ Promise.all([
 
 	// Cache license status for gate decisions
 	setCachedLicenseStatus(license)
+	
+	// Validate stored license in background (non-blocking, optimistic UI)
+	if (license && license.licensed) {
+		validateStoredLicense(license).catch(error => {
+			console.error('[Core] License validation error:', error)
+		})
+	}
 
 	// legacy spacing preference
 	if (typeof spacing != 'undefined') {

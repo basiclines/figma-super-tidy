@@ -5,30 +5,48 @@ const GUMROAD_PRODUCT_ID = WP_GUMROAD_PRODUCT_ID
 const MAX_USAGE_LIMIT = 2
 
 /**
- * Verifies a Gumroad license key and manages usage count
- * @param {string} licenseKey - The license key to verify
+ * Manually encodes form data for x-www-form-urlencoded requests
+ * @param {object} data - Key-value pairs to encode
+ * @returns {string} Encoded form data string
+ */
+function encodeFormData(data) {
+	return Object.keys(data)
+		.map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+		.join('&')
+}
+
+/**
+ * Validates a Gumroad license key (shared validation logic)
+ * @param {string} licenseKey - The license key to validate
+ * @param {boolean} incrementUsage - Whether to increment usage count
  * @returns {Promise<{ok: boolean, error?: string, purchase?: object, uses?: number}>}
  */
-export function verifyGumroadLicense(licenseKey) {
-	// First check usage without incrementing
+export function validateGumroadLicense(licenseKey, incrementUsage = false) {
 	return fetch('https://api.gumroad.com/v2/licenses/verify', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: new URLSearchParams({
+		body: encodeFormData({
 			product_id: GUMROAD_PRODUCT_ID,
 			license_key: licenseKey,
-			increment_uses_count: 'false' // Check first without incrementing
+			increment_uses_count: incrementUsage.toString()
 		})
 	})
-	.then(response => response.json())
+	.then(response => {
+		// Check if response is ok (status 200-299)
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`)
+		}
+		return response.json()
+	})
 	.then(data => {
+		// We got a valid JSON response from the API
 		if (!data.success) {
-			return { ok: false, error: 'Invalid license key' }
+			return { ok: false, error: 'Invalid license key', isLicenseError: true }
 		}
 		
 		const purchase = data.purchase || {}
 		if (purchase.refunded || purchase.chargebacked || purchase.license_disabled) {
-			return { ok: false, error: 'License is no longer valid' }
+			return { ok: false, error: 'License is no longer valid', isLicenseError: true }
 		}
 		
 		// Check usage limit (max 2 devices: work and personal)
@@ -36,53 +54,48 @@ export function verifyGumroadLicense(licenseKey) {
 		if (currentUses >= MAX_USAGE_LIMIT) {
 			return { 
 				ok: false, 
-				error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.' 
+				error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.',
+				isLicenseError: true
 			}
 		}
 		
-		// If under limit, increment usage and return success
-		return incrementLicenseUsage(licenseKey)
-			.then(incrementResult => {
-				if (incrementResult.ok) {
-					return { ok: true, purchase: incrementResult.purchase, uses: incrementResult.uses }
-				} else {
-					return { ok: false, error: 'Failed to activate license. Please try again.' }
-				}
-			})
+		return { ok: true, purchase: purchase, uses: data.uses }
 	})
 	.catch(error => {
-		console.error('[License] Error verifying license:', error)
-		return { ok: false, error: 'Unable to verify license. Please check your connection.' }
+		console.warn('[License] Network/API error during validation:', error)
+		// This is a network error, not a license validation error
+		// Don't invalidate the license, just return a network error
+		return { 
+			ok: false, 
+			error: 'Unable to verify license. Please check your connection.',
+			isNetworkError: true 
+		}
 	})
 }
 
 /**
- * Increments the usage count for a license key
- * @param {string} licenseKey - The license key to increment usage for
- * @returns {Promise<{ok: boolean, purchase?: object, uses?: number}>}
+ * Verifies a Gumroad license key and manages usage count (for user activation)
+ * @param {string} licenseKey - The license key to verify
+ * @returns {Promise<{ok: boolean, error?: string, purchase?: object, uses?: number}>}
  */
-export function incrementLicenseUsage(licenseKey) {
-	return fetch('https://api.gumroad.com/v2/licenses/verify', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: new URLSearchParams({
-			product_id: GUMROAD_PRODUCT_ID,
-			license_key: licenseKey,
-			increment_uses_count: 'true' // Actually increment this time
+export function verifyGumroadLicense(licenseKey) {
+	// First check usage without incrementing
+	return validateGumroadLicense(licenseKey, false)
+		.then(checkResult => {
+			if (!checkResult.ok) {
+				return checkResult // Return validation error
+			}
+			
+			// If validation passes, increment usage and return success
+			return validateGumroadLicense(licenseKey, true)
+				.then(incrementResult => {
+					if (incrementResult.ok) {
+						return { ok: true, purchase: incrementResult.purchase, uses: incrementResult.uses }
+					} else {
+						return { ok: false, error: 'Failed to activate license. Please try again.' }
+					}
+				})
 		})
-	})
-	.then(response => response.json())
-	.then(data => {
-		if (data.success) {
-			return { ok: true, purchase: data.purchase, uses: data.uses }
-		} else {
-			return { ok: false }
-		}
-	})
-	.catch(error => {
-		console.error('[License] Error incrementing usage:', error)
-		return { ok: false }
-	})
 }
 
 /**
@@ -115,6 +128,16 @@ export function decrementLicenseUsage(licenseKey) {
 		console.warn('[License] Failed to decrement usage count:', error)
 		return { ok: false, error: 'Network error' }
 	})
+}
+
+/**
+ * Validates a license key without incrementing usage count (for startup validation)
+ * Includes device usage validation as requested
+ * @param {string} licenseKey - The license key to validate
+ * @returns {Promise<{ok: boolean, error?: string, purchase?: object, uses?: number}>}
+ */
+export function validateLicenseOnly(licenseKey) {
+	return validateGumroadLicense(licenseKey, false) // Use shared validation logic without incrementing
 }
 
 /**
