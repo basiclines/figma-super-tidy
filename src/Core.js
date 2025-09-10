@@ -103,7 +103,7 @@ function cmdPager(pager_variable, layoutParadigm = 'rows') {
 
 /**
  * Validates stored license on startup without blocking initialization
- * If license is invalid or exceeds device limits, unlinks it and notifies user
+ * If license is invalid, unlinks it and notifies user
  * @param {object} license - The stored license data
  */
 function validateStoredLicense(license) {

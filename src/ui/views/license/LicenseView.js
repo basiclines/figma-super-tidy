@@ -181,10 +181,12 @@ class LicenseView extends Element {
 						<strong>Activated</strong><br/>
 						${activatedDate}
 					</div>
+					<!-- Device usage display temporarily disabled
 					<div class="license-detail">
 						<strong>Device Usage</strong><br/>
 						${this.data.licenseInfo.uses || 1}/2 devices
 					</div>
+					-->
 				</div>
 				
 				<button 

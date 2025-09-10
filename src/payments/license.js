@@ -2,7 +2,7 @@
 // Handles all Gumroad API interactions and license operations
 
 const GUMROAD_PRODUCT_ID = WP_GUMROAD_PRODUCT_ID
-const MAX_USAGE_LIMIT = 2
+// const MAX_USAGE_LIMIT = 2 // Temporarily disabled - will re-add in future
 
 /**
  * Manually encodes form data for x-www-form-urlencoded requests
@@ -49,15 +49,15 @@ export function validateGumroadLicense(licenseKey, incrementUsage = false) {
 			return { ok: false, error: 'License is no longer valid', isLicenseError: true }
 		}
 		
-		// Check usage limit (max 2 devices: work and personal)
-		const currentUses = data.uses || 0
-		if (currentUses >= MAX_USAGE_LIMIT) {
-			return { 
-				ok: false, 
-				error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.',
-				isLicenseError: true
-			}
-		}
+		// Check usage limit (max 2 devices: work and personal) - TEMPORARILY DISABLED
+		// const currentUses = data.uses || 0
+		// if (currentUses >= MAX_USAGE_LIMIT) {
+		// 	return { 
+		// 		ok: false, 
+		// 		error: 'License limit reached. Maximum 2 devices allowed (work and personal). Unlink from another device first.',
+		// 		isLicenseError: true
+		// 	}
+		// }
 		
 		return { ok: true, purchase: purchase, uses: data.uses }
 	})
