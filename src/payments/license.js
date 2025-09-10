@@ -20,6 +20,9 @@ function encodeFormData(data) {
  * @param {string} licenseKey - The license key to validate
  * @param {boolean} incrementUsage - Whether to increment usage count
  * @returns {Promise<{ok: boolean, error?: string, purchase?: object, uses?: number}>}
+ * 
+ * NOTE: Gumroad's API has inconsistent behavior - it may increment usage count
+ * even when increment_uses_count=false. Only call this once per activation.
  */
 export function validateGumroadLicense(licenseKey, incrementUsage = false) {
 	return fetch('https://api.gumroad.com/v2/licenses/verify', {
@@ -79,22 +82,15 @@ export function validateGumroadLicense(licenseKey, incrementUsage = false) {
  * @returns {Promise<{ok: boolean, error?: string, purchase?: object, uses?: number}>}
  */
 export function verifyGumroadLicense(licenseKey) {
-	// First check usage without incrementing
-	return validateGumroadLicense(licenseKey, false)
-		.then(checkResult => {
-			if (!checkResult.ok) {
-				return checkResult // Return validation error
+	// FIXED: Only call once with increment=true to avoid double increment
+	// Gumroad's API increments usage even when increment_uses_count=false
+	return validateGumroadLicense(licenseKey, true)
+		.then(result => {
+			if (result.ok) {
+				return { ok: true, purchase: result.purchase, uses: result.uses }
+			} else {
+				return result // Return validation error as-is
 			}
-			
-			// If validation passes, increment usage and return success
-			return validateGumroadLicense(licenseKey, true)
-				.then(incrementResult => {
-					if (incrementResult.ok) {
-						return { ok: true, purchase: incrementResult.purchase, uses: incrementResult.uses }
-					} else {
-						return { ok: false, error: 'Failed to activate license. Please try again.' }
-					}
-				})
 		})
 }
 
