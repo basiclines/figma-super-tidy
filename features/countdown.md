@@ -1,9 +1,13 @@
-### Countdown Monetization Plan (Gumroad One‑Time License, Client‑Only)
+### Super Tidy Pro: Countdown Monetization System
 
-#### Goal
-- Introduce a countdown gate (random 6–15s) before executing any command for unlicensed users, with an in-UI option to purchase and skip the delay.
-- Licensed customers experience zero delay.
-- Payments handled via a Gumroad product (one-time); license activation is client-only via Gumroad License Verification API with Netlify Function proxy for secure API operations.
+#### Overview
+Implement a premium licensing system with countdown gates for free users and instant execution for licensed users. The system uses Gumroad for payments and license management, with a client-side verification approach optimized for performance and user experience.
+
+#### Product Goals
+- **Premium Experience**: Licensed users get instant command execution with zero friction
+- **Conversion Optimization**: Free users experience 6-15 second countdown with seamless upgrade path
+- **Reliable Architecture**: Robust data flow with comprehensive error tracking and observability
+- **Scalable Foundation**: Clean separation of concerns and reusable architectural patterns
 
 ---
 
@@ -36,13 +40,14 @@
 
 ---
 
-### Technical Architecture (Final Implementation)
+### Technical Architecture
 
-#### **Core Architecture Principles**
-- **Embedded Countdown**: Countdown is a state within FormView.js, not a separate route
-- **Clean Separation**: UI logic in UI layer, Figma APIs in Core.js
-- **Direct Communication**: UI components use direct method calls, postMessage only for Core.js communication
-- **License Caching**: License status cached in memory for fast gate decisions
+#### **Design Principles**
+- **Unidirectional Data Flow**: Data flows from Core → App → Components via props
+- **Separation of Concerns**: Core.js handles Figma APIs, UI handles presentation logic
+- **Centralized Storage**: Single utility manages all clientStorage operations with validation
+- **Observability First**: Comprehensive error tracking and analytics integration
+- **Memory Efficiency**: Proper cleanup patterns and singleton utilities
 
 #### **Component Responsibilities**
 
@@ -54,26 +59,33 @@
 - Supports both UI-initiated and direct (menu) countdowns via callback parameter
 - Imports and displays AnalogChronometer component
 
-**Core.js** (Pure Figma APIs):
-- Handles Figma Canvas and Storage APIs only
-- Manages license storage in `figma.clientStorage` (`LICENSE_V1` key)
-- Wraps menu commands with `ensureDirectCommandGate` for gating
-- Sends `start-direct-countdown` messages to UI for menu-initiated commands
-- Processes license-related messages: `get-license`, `activate-license`, `remove-license`
+**Core.js** (Figma API Layer):
+- Manages all Figma Canvas and Storage APIs exclusively
+- Handles license storage using centralized Storage utility
+- Implements command gating with `ensureDirectCommandGate`
+- Includes license data in all initialization messages
+- Processes license activation/removal via postMessage
 
-**App.js** (Minimal orchestrator):
-- Handles Core.js messages and initializes views
-- `handleDirectCountdown` navigates to FormView and calls startCountdown directly
-- Router setup excludes countdown route (no longer needed)
-- Removed CountdownView import and rendering from App.js
-- Direct integration with FormView's embedded countdown functionality
+**App.js** (Data Orchestration):
+- Receives initialization data from Core.js including license status
+- Stores license and preferences in component state
+- Passes data to child components via HTML attributes
+- Handles direct countdown coordination for menu commands
+- Manages view routing and component lifecycle
 
-**LicenseView.js** (License management):
-- Dual-state rendering: unlicensed form vs licensed info display
-- Gumroad API integration via Netlify Function proxy
-- 2-device usage limit enforcement
-- License validation, activation, and unlinking
-- Device usage tracking and display
+**FormView.js** (Primary UI & Gating):
+- Embedded countdown state within main form interface
+- Receives license data via props from App.js
+- Manages countdown timer and analog chronometer display
+- Handles both UI-initiated and menu-triggered countdowns
+- Updates license cache directly from props
+
+**LicenseView.js** (License Management):
+- Dual-state rendering: activation form vs license info display
+- Receives current license data via props from App.js
+- Integrates with Gumroad API for license verification
+- Manages license activation and device unlinking
+- Provides user support and troubleshooting access
 
 **AnalogChronometer.js** (Visual countdown):
 - Animated analog clock with red needle
@@ -81,22 +93,78 @@
 - Attribute-based updates (`total-seconds`, `current-seconds`)
 - Clean white circle design with red accents
 
-#### **Gating Flow**
-1. User triggers command (UI form or menu)
-2. Check cached license status via `shouldShowCountdown()`
-3. **If licensed**: Execute command immediately
-4. **If unlicensed**: 
-   - FormView shows countdown state (embedded, not separate route)
-   - User stays on "Actions" tab throughout countdown
-   - After countdown: "Run Now" button enables
-   - User clicks "Run Now" to execute command
+#### **Storage Architecture**
 
-#### **Menu Command Gating**
-- Core.js wraps menu commands with `ensureDirectCommandGate`
-- Shows UI and sends `start-direct-countdown` message
-- App.js calls FormView.startCountdown with callback
-- Callback sends `direct-countdown-complete` message back to Core.js
-- Licensed users get `figma.closePlugin()` immediately
+**Centralized Storage Utility** (`src/utils/Storage.js`):
+- Constructor-based singleton pattern initialized from Core.js
+- Map-based key validation prevents runtime errors
+- Automatic error tracking for all storage operations
+- Promise-based API using then/catch for compatibility
+- Batch operations (getMultiple/setMultiple) for efficiency
+
+**Storage Key Management**:
+```javascript
+// Defined in Core.js
+const STORAGE_KEYS = {
+    UUID: 'UUID',
+    PREFERENCES: 'preferences',
+    LICENSE_V1: 'LICENSE_V1',
+    AD_LAST_SHOWN_DATE: 'AD_LAST_SHOWN_DATE',
+    AD_LAST_SHOWN_IMPRESSION: 'AD_LAST_SHOWN_IMPRESSION'
+}
+
+// Usage throughout application
+Storage.get(Storage.getKey('LICENSE_V1'))
+Storage.set(Storage.getKey('UUID'), value)
+```
+
+**Error Tracking Integration**:
+All storage failures automatically emit tracking events:
+```javascript
+{
+    type: 'tracking-event',
+    event: 'storage-operation-failed',
+    properties: {
+        operation: 'get|set|remove',
+        key: 'LICENSE_V1',
+        error: 'Detailed error message',
+        timestamp: Date.now()
+    }
+}
+```
+
+#### **Data Flow Architecture**
+
+**Initialization Flow**:
+```
+Core.js → Storage.getMultiple() → Include in init messages → App.js → Props → Components
+```
+
+**License Activation Flow**:
+```
+LicenseView → Gumroad API → activateLicense() → Core.js → Storage.set() → Cache Update
+```
+
+**Command Execution Flow**:
+```
+User Action → Gate Check → [Licensed: Execute] | [Unlicensed: Countdown → Manual Execute]
+```
+
+#### **Gating Implementation**
+1. **User triggers command** (UI form or menu)
+2. **License check** via cached status in `shouldShowCountdown()`
+3. **Licensed path**: Execute command immediately
+4. **Unlicensed path**: 
+   - FormView shows countdown state (embedded in current view)
+   - User remains on current tab throughout countdown
+   - After countdown completion: "Run Now" button enables
+   - Manual execution trigger required
+
+#### **Menu Command Integration**
+- Core.js wraps all menu commands with `ensureDirectCommandGate`
+- Shows UI and includes license data in `init-direct` message
+- App.js coordinates FormView countdown with execution callback
+- Licensed users bypass countdown entirely with immediate execution
 
 ---
 
@@ -207,7 +275,9 @@
 1. **Race Conditions**: FormView event listeners were accumulating without cleanup
 2. **Data Consistency**: Usage count not properly stored during license activation
 3. **Silent Failures**: Storage operations lacked error handling and user feedback
-4. **Solution**: Implemented proper event listener cleanup, comprehensive error handling, and consistent data format
+4. **Complex Timeout Patterns**: Duplicated postMessage request/response cycles with timeout cleanup
+5. **Memory Leaks**: Event listeners not properly cleaned up in license retrieval
+6. **Solution**: Implemented proper event listener cleanup, comprehensive error handling, consistent data format, and eliminated postMessage complexity
 
 #### **Key Technical Decisions**
 - **Memory over Storage**: License status cached in `gate.js` for performance
@@ -216,6 +286,9 @@
 - **State Management**: LEO Element data properties for countdown state
 - **Event Listener Management**: Proper cleanup to prevent memory leaks and race conditions
 - **Error Handling**: Comprehensive error handling for all storage operations with user feedback
+- **Centralized Storage**: Storage utility with automatic error tracking and validation
+- **Data Down, Events Up**: License data flows from Core → App → Components via props
+- **Unidirectional Data Flow**: Eliminated complex postMessage request/response cycles
 
 ---
 
@@ -228,8 +301,8 @@
 - [x] Manual "Run Now" button after countdown completion
 - [x] License tab with dual-state rendering
 - [x] Gumroad license verification and activation
-- [x] 2-device usage limit with Netlify Function proxy
-- [x] License info display and device usage tracking
+- [x] ~~2-device usage limit with Netlify Function proxy~~ (Temporarily disabled for easier management)
+- [x] License info display ~~and device usage tracking~~ (Device tracking temporarily hidden)
 - [x] License unlinking with usage count decrement
 - [x] Menu command gating for direct Figma menu access
 - [x] License status caching for fast gate decisions
@@ -238,18 +311,25 @@
 - [x] Fixed license storage/retrieval race conditions and reliability issues
 - [x] Comprehensive error handling with user feedback for all storage operations
 - [x] Proper event listener cleanup to prevent memory leaks
+- [x] **NEW**: Centralized Storage utility with automatic error tracking
+- [x] **NEW**: Eliminated postMessage timeout patterns for license retrieval
+- [x] **NEW**: Unidirectional data flow (Core → App → Components)
+- [x] **NEW**: Comprehensive storage operation tracking and analytics
 
 #### **✅ Tested Scenarios**
 - [x] Licensed user: immediate command execution
 - [x] Unlicensed user: countdown → manual execution
 - [x] License activation: Gumroad API integration
 - [x] Menu commands: gating works from Figma menu
-- [x] Device limits: 2-device enforcement
+- [x] ~~Device limits: 2-device enforcement~~ (Temporarily disabled)
 - [x] License unlinking: usage count decremented
 - [x] Error handling: invalid keys, API failures
 - [x] License storage reliability: consistent save/load across plugin sessions
 - [x] Memory management: no event listener leaks or race conditions
 - [x] Error recovery: proper user feedback for storage failures
+- [x] **NEW**: Storage error tracking and analytics integration
+- [x] **NEW**: License data propagation through init messages
+- [x] **NEW**: Props-based license data flow without postMessage complexity
 
 #### **🎯 Production Ready**
 The countdown monetization system is fully implemented and functional, with:
@@ -287,22 +367,124 @@ The countdown monetization system is fully implemented and functional, with:
 
 ---
 
-### Future Enhancements (Optional)
+### Development Best Practices
 
-#### **Potential Improvements**
-- [ ] Server-side license validation for stronger security
-- [ ] Usage analytics and conversion optimization
-- [ ] License transfer between devices
-- [ ] Bulk license management for teams
-- [ ] Additional license tiers or features
+#### **Storage Operations**
+- Always use centralized Storage utility with key validation
+- Handle both success and failure cases with user feedback
+- Use batch operations for related data updates
+- Initialize all keys in Core.js, avoid hardcoded strings
 
-#### **Technical Debt**
-- [ ] Migrate from LEO.js to modern framework (if needed)
-- [x] Enhanced error handling and retry mechanisms (COMPLETED)
-- [ ] Automated testing for license flows
-- [ ] Performance optimization for large selections
-- [x] Memory leak prevention and proper cleanup (COMPLETED)
-- [x] Race condition fixes in license management (COMPLETED)
+#### **Data Flow Patterns**
+- Prefer "data down, events up" architecture
+- Include data in initialization messages rather than separate requests
+- Use component props/attributes instead of complex postMessage cycles
+- Maintain single source of truth for application state
+
+#### **Error Handling & Observability**
+- Emit tracking events for all error conditions
+- Provide specific, actionable error messages to users
+- Log contextual information for effective debugging
+- Distinguish between recoverable and fatal error types
+
+#### **Memory & Performance**
+- Clean up event listeners in component lifecycle methods
+- Use singleton patterns to prevent resource duplication
+- Prefer direct method calls over complex async coordination
+- Implement proper component cleanup patterns
+
+#### **Code Organization**
+- Separate Figma API operations from UI logic
+- Create reusable utilities for common patterns
+- Use constructor-based classes for stateful services
+- Implement comprehensive input validation with clear error messages
+
+---
+
+### Implementation Phases
+
+#### **Phase 1: Core Infrastructure**
+- Centralized Storage utility implementation with key validation
+- Basic countdown timer and gating logic
+- License data flow architecture via props
+- Error tracking and analytics integration
+
+#### **Phase 2: Gumroad Integration**
+- License verification API integration
+- Secure key management and hashing
+- Purchase flow and activation process
+- Device management capabilities
+
+#### **Phase 3: User Experience Polish**
+- Analog chronometer animation implementation
+- Visual design and interaction refinement
+- Comprehensive error handling and user messaging
+- Performance optimization and testing
+
+#### **Phase 4: Analytics & Optimization**
+- Conversion funnel implementation
+- A/B testing framework setup
+- Performance monitoring and alerting
+- User feedback collection and analysis
+
+### Testing Strategy
+
+#### **Automated Testing**
+- Unit tests for Storage utility and core functions
+- Integration tests for license verification flow
+- Performance tests for countdown and activation timing
+- Error scenario testing for network and storage failures
+
+#### **Manual Testing Scenarios**
+- Licensed user: instant command execution across all entry points
+- Unlicensed user: countdown completion and manual execution
+- License activation: Gumroad integration and key validation
+- Menu commands: gating functionality from Figma menu
+- Error recovery: invalid keys, network failures, storage issues
+
+#### **User Acceptance Testing**
+- Conversion flow optimization and usability
+- User interface accessibility and cross-platform compatibility
+- Performance under various system conditions
+- Edge case handling and error recovery
+
+---
+
+### Future Enhancements
+
+#### **Advanced Features**
+- Server-side license validation for enhanced security
+- Team license management and bulk operations
+- License transfer capabilities between devices
+- Advanced usage analytics and reporting
+- Multiple license tiers and feature sets
+
+#### **Technical Improvements**
+- Automated testing framework expansion
+- Performance optimization for large selections
+- Modern framework migration considerations
+- Enhanced retry mechanisms for critical operations
+- Storage integrity verification systems
+
+#### **Business Expansion**
+- Subscription model exploration
+- Partner integration opportunities
+- International market expansion
+- Advanced conversion optimization
+
+### Success Metrics
+
+#### **Primary KPIs**
+- License conversion rate from free to premium users
+- User retention and engagement metrics
+- Revenue per user and lifetime value
+- Customer satisfaction and support efficiency
+
+#### **Technical KPIs**
+- System uptime and reliability metrics
+- License activation success rate
+- Storage operation performance and error rates
+- User experience quality indicators
 
 ---
 
