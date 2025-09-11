@@ -2,7 +2,7 @@ import './FormView.css'
 
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
-import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
+import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
 import '../countdown/CountdownView'
 
 class FormView extends Element {
@@ -12,23 +12,8 @@ class FormView extends Element {
 		this.data.pendingCommand = null
 		this.data.showingCountdown = false
 		
-		// Load license status for gate decisions from props
-		this.loadLicenseFromProps()
-	}
-
-	loadLicenseFromProps() {
-		const licenseAttr = this.getAttribute('license')
-		if (licenseAttr && licenseAttr !== '{}') {
-			try {
-				const license = JSON.parse(licenseAttr.replace(/&quot;/g, '"').replace(/&#39;/g, "'"))
-				setCachedLicenseStatus(license)
-			} catch (e) {
-				console.warn('[FormView] Failed to parse license data:', e)
-				setCachedLicenseStatus(null)
-			}
-		} else {
-			setCachedLicenseStatus(null)
-		}
+		// License status is managed by Core.js during initialization
+		// No need to update cache from FormView
 	}
 
 	handleEmptyState(selection) {
