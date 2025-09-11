@@ -12,30 +12,23 @@ class FormView extends Element {
 		this.data.pendingCommand = null
 		this.data.showingCountdown = false
 		
-		// Load license status for gate decisions
-		this.loadLicenseStatus()
+		// Load license status for gate decisions from props
+		this.loadLicenseFromProps()
 	}
 
-	loadLicenseStatus() {
-		// Request license data from Core.js to update gate cache
-		parent.postMessage({ 
-			pluginMessage: { type: 'get-license-for-gate' } 
-		}, '*')
-		
-		// Listen for license data response (only once)
-		const handler = (e) => {
-			const msg = e.data.pluginMessage
-			if (msg.type === 'license-data-for-gate') {
-				setCachedLicenseStatus(msg.license)
-				window.removeEventListener('message', handler) // Clean up listener
+	loadLicenseFromProps() {
+		const licenseAttr = this.getAttribute('license')
+		if (licenseAttr && licenseAttr !== '{}') {
+			try {
+				const license = JSON.parse(licenseAttr.replace(/&quot;/g, '"').replace(/&#39;/g, "'"))
+				setCachedLicenseStatus(license)
+			} catch (e) {
+				console.warn('[FormView] Failed to parse license data:', e)
+				setCachedLicenseStatus(null)
 			}
+		} else {
+			setCachedLicenseStatus(null)
 		}
-		window.addEventListener('message', handler)
-		
-		// Timeout cleanup after 2 seconds
-		setTimeout(() => {
-			window.removeEventListener('message', handler)
-		}, 2000)
 	}
 
 	handleEmptyState(selection) {

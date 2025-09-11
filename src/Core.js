@@ -38,7 +38,7 @@ function hashLicenseKey(key) {
 }
 
 // Helper function to handle gating for direct menu commands
-function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID) {
+function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID, license) {
 	if (shouldShowCountdown()) {
 		// Show UI with countdown for unlicensed users
 		figma.showUI(__html__, { width: 360, height: UI_HEIGHT })
@@ -50,7 +50,8 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID)
 			type: 'init-direct',
 			UUID: UUID,
 			cmd: commandName,
-			preferences: preferences
+			preferences: preferences,
+			license: license
 		})
 		
 		// Then send countdown start message
@@ -167,7 +168,8 @@ Storage.getMultiple([
 		type: 'init-hidden',
 		UUID: UUID,
 		cmd: cmd,
-		preferences: preferences
+		preferences: preferences,
+		license: license
 	})
 
 	// Command triggered by user
@@ -176,28 +178,28 @@ Storage.getMultiple([
 		ensureDirectCommandGate('rename', () => {
 			cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Rename')
-		}, preferences, UUID)
+		}, preferences, UUID, license)
 	} else
 	if (cmd == 'reorder') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('reorder', () => {
 			cmdReorder(preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Reorder')
-		}, preferences, UUID)
+		}, preferences, UUID, license)
 	} else
 	if (cmd == 'tidy') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('tidy', () => {
 			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Tidy')
-		}, preferences, UUID)
+		}, preferences, UUID, license)
 	} else
 	if (cmd == 'pager') {
 		// RUNS WITH COUNTDOWN GATE
 		ensureDirectCommandGate('pager', () => {
 			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy: Pager')
-		}, preferences, UUID)
+		}, preferences, UUID, license)
 	} else
 	if (cmd == 'all') {
 		// RUNS WITH COUNTDOWN GATE
@@ -207,7 +209,7 @@ Storage.getMultiple([
 			cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
 			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			figma.notify('Super Tidy')
-		}, preferences, UUID)
+		}, preferences, UUID, license)
 	} else
 	if (cmd == 'options') {
 		// OPEN UI
@@ -217,6 +219,7 @@ Storage.getMultiple([
 			UUID: UUID,
 			cmd: cmd,
 			preferences: preferences,
+			license: license,
 			AD_LAST_SHOWN_DATE: AD_LAST_SHOWN_DATE,
 			AD_LAST_SHOWN_IMPRESSION: AD_LAST_SHOWN_IMPRESSION
 		})
@@ -260,26 +263,6 @@ Storage.getMultiple([
 
 			if (msg.type === 'resetImpression') {
 				Storage.set(Storage.getKey('AD_LAST_SHOWN_IMPRESSION'), 0)
-			} else
-			if (msg.type === 'get-license') {
-				// Return stored license data to UI
-				Storage.get(Storage.getKey('LICENSE_V1'))
-					.then(license => {
-						figma.ui.postMessage({
-							type: 'license-data',
-							license: license || null
-						})
-					})
-			} else
-			if (msg.type === 'get-license-for-gate') {
-				// Return license data specifically for gate cache updates
-				Storage.get(Storage.getKey('LICENSE_V1'))
-					.then(license => {
-						figma.ui.postMessage({
-							type: 'license-data-for-gate',
-							license: license || null
-						})
-					})
 			} else
 			if (msg.type === 'activate-license') {
 				// Store license data from UI

@@ -20,6 +20,7 @@ class ui extends Element {
 			let msg = event.data.pluginMessage
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
+				this.data.license = msg.license
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
@@ -88,11 +89,15 @@ class ui extends Element {
 		}
 	}
 
+	escapeAttribute(str) {
+		return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+	}
+
 	render() {
 		if (!this.data.preferences) return '';
 		return`
 			<c-toolbar></c-toolbar>
-			<v-form data-view="index" class="view"></v-form>
+			<v-form data-view="index" class="view" license="${this.escapeAttribute(JSON.stringify(this.data.license || {}))}"></v-form>
 			<v-preferences class="view" hidden data-view="preferences"
 				xspacing="${this.data.preferences.spacing.x}"
 				yspacing="${this.data.preferences.spacing.y}"
@@ -102,7 +107,7 @@ class ui extends Element {
 				renamestrategy="${this.data.preferences.rename_strategy}"
 				layoutparadigm="${this.data.preferences.layout_paradigm || 'rows'}"
 			></v-preferences>
-			<v-license class="view" hidden data-view="license"></v-license>
+			<v-license class="view" hidden data-view="license" license="${this.escapeAttribute(JSON.stringify(this.data.license || {}))}"></v-license>
 		`
 	}
 }

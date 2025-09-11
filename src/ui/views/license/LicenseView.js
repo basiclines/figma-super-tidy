@@ -5,7 +5,6 @@ import { setCachedLicenseStatus } from 'src/payments/gate'
 import { 
 	verifyGumroadLicense, 
 	decrementLicenseUsage, 
-	getStoredLicense, 
 	activateLicense, 
 	removeLicense, 
 	createLicenseInfo 
@@ -19,13 +18,14 @@ class LicenseView extends Element {
 		this.data.statusType = '' // 'success', 'error', or ''
 		this.data.isLicensed = false
 		this.data.licenseInfo = null
-		this.loadCurrentLicense()
+		this.loadLicenseFromProps()
 	}
 
-	loadCurrentLicense() {
-		// Check if user already has a license
-		getStoredLicense()
-			.then(license => {
+	loadLicenseFromProps() {
+		const licenseAttr = this.getAttribute('license')
+		if (licenseAttr && licenseAttr !== '{}') {
+			try {
+				const license = JSON.parse(licenseAttr.replace(/&quot;/g, '"').replace(/&#39;/g, "'"))
 				if (license && license.licensed) {
 					this.data.isLicensed = true
 					this.data.licenseInfo = license
@@ -35,10 +35,10 @@ class LicenseView extends Element {
 					}
 					this.render()
 				}
-			})
-			.catch(e => {
-				// No existing license found
-			})
+			} catch (e) {
+				console.warn('[LicenseView] Failed to parse license data:', e)
+			}
+		}
 	}
 
 	activateLicense() {

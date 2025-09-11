@@ -140,33 +140,6 @@ export function validateLicenseOnly(licenseKey) {
 	return validateGumroadLicense(licenseKey, false) // Use shared validation logic without incrementing
 }
 
-/**
- * Retrieves stored license data from Figma client storage via postMessage
- * @returns {Promise<object|null>} License data or null if not found
- */
-export function getStoredLicense() {
-	return new Promise((resolve) => {
-		parent.postMessage({ 
-			pluginMessage: { type: 'get-license' } 
-		}, '*')
-		
-		// Listen for response
-		const handler = (e) => {
-			const msg = e.data.pluginMessage
-			if (msg.type === 'license-data') {
-				window.removeEventListener('message', handler)
-				resolve(msg.license)
-			}
-		}
-		window.addEventListener('message', handler)
-		
-		// Timeout after 1 second
-		setTimeout(() => {
-			window.removeEventListener('message', handler)
-			resolve(null)
-		}, 1000)
-	})
-}
 
 /**
  * Activates a license by storing it via postMessage to Core.js
