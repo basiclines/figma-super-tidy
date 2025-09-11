@@ -32,6 +32,10 @@ class ui extends Element {
 			if (msg.type == 'start-direct-countdown') {
 				this.handleDirectCountdown(msg.seconds, msg.commandName)
 			}
+
+			if (msg.type == 'tracking-event') {
+				Tracking.track(msg.event, msg.properties)
+			}
 		})
 
 		Router.setup({

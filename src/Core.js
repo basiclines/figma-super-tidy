@@ -1,4 +1,5 @@
 import Tracking from 'src/utils/Tracking'
+import Storage from 'src/utils/Storage'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
 import { validateLicenseOnly } from 'src/payments/license'
 import { 
@@ -11,6 +12,18 @@ import {
 } from 'src/utils/LayoutUtils'
 
 const UI_HEIGHT = 540
+
+// Initialize Storage with valid keys
+const STORAGE_KEYS = {
+	UUID: 'UUID',
+	PREFERENCES: 'preferences', 
+	AD_LAST_SHOWN_DATE: 'AD_LAST_SHOWN_DATE',
+	AD_LAST_SHOWN_IMPRESSION: 'AD_LAST_SHOWN_IMPRESSION',
+	LICENSE_V1: 'LICENSE_V1',
+	SPACING: 'spacing' // legacy key
+}
+
+Storage.init(STORAGE_KEYS)
 
 const cmd = figma.command
 figma.showUI(__html__, { visible: false })
@@ -121,11 +134,15 @@ function validateStoredLicense(license) {
 					console.warn('[Core] License is invalid according to API:', result.error)
 					
 					// Unlink invalid license
-					return figma.clientStorage.setAsync('LICENSE_V1', null)
-						.then(() => {
-							setCachedLicenseStatus(null)
-							// Notify user with clear message
-							figma.notify(`License unlinked: ${result.error}. Please reactivate in the License tab.`)
+					return Storage.set(Storage.getKey('LICENSE_V1'), null)
+						.then((success) => {
+							if (success) {
+								setCachedLicenseStatus(null)
+								// Notify user with clear message
+								figma.notify(`License unlinked: ${result.error}. Please reactivate in the License tab.`)
+							} else {
+								figma.notify('Failed to unlink license. Please try again.')
+							}
 						})
 				} else if (result.isNetworkError) {
 					console.warn('[Core] Network error during license validation, keeping license active:', result.error)
@@ -145,20 +162,20 @@ function validateStoredLicense(license) {
 }
 
 // Obtain UUID, preferences, and license then trigger init event
-Promise.all([
-	figma.clientStorage.getAsync('UUID'),
-	figma.clientStorage.getAsync('preferences'),
-	figma.clientStorage.getAsync('AD_LAST_SHOWN_DATE'),
-	figma.clientStorage.getAsync('AD_LAST_SHOWN_IMPRESSION'),
-	figma.clientStorage.getAsync('spacing'), // legacy
-	figma.clientStorage.getAsync('LICENSE_V1') // license data
-]).then(values => {
-	let UUID = values[0]
-	let preferences = values[1]
-	let AD_LAST_SHOWN_DATE = values[2] || 572083200 // initial date, if no date was saved previously
-	let AD_LAST_SHOWN_IMPRESSION = values[3] || 0 // initial impressions
-	let spacing = values[4]
-	let license = values[5] // license data
+Storage.getMultiple([
+	Storage.getKey('UUID'),
+	Storage.getKey('PREFERENCES'),
+	Storage.getKey('AD_LAST_SHOWN_DATE'),
+	Storage.getKey('AD_LAST_SHOWN_IMPRESSION'),
+	Storage.getKey('SPACING'), // legacy
+	Storage.getKey('LICENSE_V1') // license data
+]).then(storageData => {
+	let UUID = storageData[Storage.getKey('UUID')]
+	let preferences = storageData[Storage.getKey('PREFERENCES')]
+	let AD_LAST_SHOWN_DATE = storageData[Storage.getKey('AD_LAST_SHOWN_DATE')] || 572083200 // initial date, if no date was saved previously
+	let AD_LAST_SHOWN_IMPRESSION = storageData[Storage.getKey('AD_LAST_SHOWN_IMPRESSION')] || 0 // initial impressions
+	let spacing = storageData[Storage.getKey('SPACING')]
+	let license = storageData[Storage.getKey('LICENSE_V1')] // license data
 
 	let SPACING = { x: 100, y: 200 }
 	let START_NAME = '000'
@@ -178,7 +195,7 @@ Promise.all([
 
 	if (!UUID) {
 		UUID = Tracking.createUUID()
-		figma.clientStorage.setAsync('UUID', UUID)
+		Storage.set(Storage.getKey('UUID'), UUID)
 	}
 
 	// Cache license status for gate decisions
@@ -279,49 +296,42 @@ Promise.all([
 			} else
 			if (msg.type === 'preferences') {
 				preferences = msg.preferences
-				figma.clientStorage.setAsync('preferences', preferences)
-				figma.notify('Preferences saved')
+				Storage.set(Storage.getKey('PREFERENCES'), preferences).then((success) => {
+					if (success) {
+						figma.notify('Preferences saved')
+					} else {
+						figma.notify('Failed to save preferences. Please try again.')
+					}
+				})
 			} else
 			if (msg.type === 'displayImpression') {
 				figma.ui.resize(320, 540+124)
-				figma.clientStorage.setAsync('AD_LAST_SHOWN_DATE', Date.now())
-				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', parseInt(AD_LAST_SHOWN_IMPRESSION)+1)
+				Storage.setMultiple({
+					[Storage.getKey('AD_LAST_SHOWN_DATE')]: Date.now(),
+					[Storage.getKey('AD_LAST_SHOWN_IMPRESSION')]: parseInt(AD_LAST_SHOWN_IMPRESSION)+1
+				})
 			}
 
 			if (msg.type === 'resetImpression') {
-				figma.clientStorage.setAsync('AD_LAST_SHOWN_IMPRESSION', 0)
+				Storage.set(Storage.getKey('AD_LAST_SHOWN_IMPRESSION'), 0)
 			} else
 			if (msg.type === 'get-license') {
 				// Return stored license data to UI
-				figma.clientStorage.getAsync('LICENSE_V1')
+				Storage.get(Storage.getKey('LICENSE_V1'))
 					.then(license => {
 						figma.ui.postMessage({
 							type: 'license-data',
 							license: license || null
-						})
-					})
-					.catch(error => {
-						console.error('[Core] Failed to retrieve license:', error)
-						figma.ui.postMessage({
-							type: 'license-data',
-							license: null
 						})
 					})
 			} else
 			if (msg.type === 'get-license-for-gate') {
 				// Return license data specifically for gate cache updates
-				figma.clientStorage.getAsync('LICENSE_V1')
+				Storage.get(Storage.getKey('LICENSE_V1'))
 					.then(license => {
 						figma.ui.postMessage({
 							type: 'license-data-for-gate',
 							license: license || null
-						})
-					})
-					.catch(error => {
-						console.error('[Core] Failed to retrieve license for gate:', error)
-						figma.ui.postMessage({
-							type: 'license-data-for-gate',
-							license: null
 						})
 					})
 			} else
@@ -338,26 +348,26 @@ Promise.all([
 					uses: msg.uses || 1 // Include usage count from activation
 				}
 				
-				figma.clientStorage.setAsync('LICENSE_V1', licenseData)
-					.then(() => {
-						setCachedLicenseStatus(licenseData) // Update cache
-					figma.notify('You now have Super Tidy Pro')
-					})
-					.catch(error => {
-						console.error('[Core] Failed to store license data:', error)
-						figma.notify('Failed to save license. Please try again.')
+				Storage.set(Storage.getKey('LICENSE_V1'), licenseData)
+					.then((success) => {
+						if (success) {
+							setCachedLicenseStatus(licenseData) // Update cache
+							figma.notify('You now have Super Tidy Pro')
+						} else {
+							figma.notify('Failed to save license. Please try again.')
+						}
 					})
 			} else
 			if (msg.type === 'remove-license') {
 				// Remove stored license
-				figma.clientStorage.setAsync('LICENSE_V1', null)
-					.then(() => {
-						setCachedLicenseStatus(null) // Update cache
-						figma.notify('License unlinked from this device')
-						})
-					.catch(error => {
-						console.error('[Core] Failed to remove license:', error)
-						figma.notify('Failed to unlink license. Please try again.')
+				Storage.remove(Storage.getKey('LICENSE_V1'))
+					.then((success) => {
+						if (success) {
+							setCachedLicenseStatus(null) // Update cache
+							figma.notify('License unlinked from this device')
+						} else {
+							figma.notify('Failed to unlink license. Please try again.')
+						}
 					})
 			}
 		}
