@@ -37,8 +37,24 @@ function hashLicenseKey(key) {
 	}
 }
 
+// Helper function to validate selection for direct commands
+function validateSelectionForCommand(commandName) {
+	const selection = figma.currentPage.selection
+	if (selection.length === 0) {
+		figma.notify('Select some layers first to start using Super Tidy.')
+		figma.closePlugin()
+		return false
+	}
+	return true
+}
+
 // Helper function to handle gating for direct menu commands
 function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID, license) {
+	// First validate selection - skip everything if no selection
+	if (!validateSelectionForCommand(commandName)) {
+		return // Exit early, user already notified
+	}
+	
 	if (shouldShowCountdown()) {
 		// Show UI with countdown for unlicensed users
 		figma.showUI(__html__, { width: 360, height: UI_HEIGHT })
