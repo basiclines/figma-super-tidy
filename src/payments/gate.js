@@ -1,5 +1,5 @@
-// License gate - Now checks actual stored license
-// Global license state loaded on plugin init
+// License gate - Manages license status in current JavaScript context
+// Note: Core.js (main thread) and UI (iframe) have separate instances of this cache
 let cachedLicenseStatus = null
 
 function getRandomIntInclusive(min, max) {
@@ -9,13 +9,15 @@ function getRandomIntInclusive(min, max) {
 
 export function setCachedLicenseStatus(license) {
   cachedLicenseStatus = license
-  console.log('[Gate] License status updated:', license ? 'LICENSED' : 'UNLICENSED')
+  const context = typeof figma !== 'undefined' ? 'Core' : 'UI'
+  console.log(`[Gate:${context}] License status updated:`, license ? 'LICENSED' : 'UNLICENSED')
 }
 
 export function shouldShowCountdown() {
-  // Check actual license status
+  // Check actual license status in current context
   const isLicensed = cachedLicenseStatus && cachedLicenseStatus.licensed
-  console.log('[Gate] shouldShowCountdown:', !isLicensed, 'cached license:', cachedLicenseStatus)
+  const context = typeof figma !== 'undefined' ? 'Core' : 'UI'
+  console.log(`[Gate:${context}] shouldShowCountdown:`, !isLicensed, 'cached license:', cachedLicenseStatus)
   return !isLicensed
 }
 

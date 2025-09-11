@@ -5,6 +5,7 @@ import 'src/ui/FigmaUI.css'
 import Tracking from 'src/utils/Tracking'
 import Router from 'src/utils/Router'
 import Element from 'src/ui/Element'
+import { setCachedLicenseStatus } from 'src/payments/gate'
 
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
@@ -21,6 +22,10 @@ class ui extends Element {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
 				this.data.license = msg.license
+				
+				// Update UI context license cache (separate from Core.js context)
+				setCachedLicenseStatus(msg.license)
+				
 				Tracking.setup(WP_AMPLITUDE_KEY, msg.UUID)
 				Tracking.track('openPlugin', { cmd: msg.cmd })
 			}
