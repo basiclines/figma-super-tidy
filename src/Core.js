@@ -1,6 +1,9 @@
 import Tracking from 'src/utils/Tracking'
 import Storage from 'src/utils/Storage'
+
 import FigPen from 'src/utils/FigPen'
+import MessageBus from 'src/utils/MessageBus'
+
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
 import { 
 	getNodesGroupedbyPosition, 
@@ -80,12 +83,11 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID,
 			})
 		}, 50)
 		
-		// Handle countdown completion
-		FP.onUIMessage((msg) => {
-			if (msg.type === 'direct-countdown-complete') {
-				executeCommand()
-				FP.closePlugin()
-			}
+
+		// Bind direct countdown completion handler
+		MessageBus.bind('direct-countdown-complete', (msg) => {
+			executeCommand()
+			FP.closePlugin()
 		})
 	} else {
 		// Execute immediately if licensed
@@ -184,7 +186,86 @@ Storage.getMultiple([
 		// Make sure initial selection is sent to the UI
 		FP.notifyUI({ type: 'selection', selection: FP.currentSelection() })
 	})
+
+	// Set up selection change listener using FigPen
+	FP.onSelectionChange((selection) => {
+		FP.notifyUI({ type: 'selection', selection: selection })
+	})
+
+	// Bind all message handlers using MessageBus
+	MessageBus.bind('tidy', (msg) => {
+		var RENAMING_ENABLED = msg.options.renaming
+		var REORDER_ENABLED = msg.options.reorder
+		var TIDY_ENABLED = msg.options.tidy
+		var PAGER_ENABLED = msg.options.pager
+
+		if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
+		if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
+		if (REORDER_ENABLED) cmdReorder(preferences.layout_paradigm || 'rows')
+		if (PAGER_ENABLED) cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
+		FP.showNotification('Super Tidy')
+		setTimeout(() => FP.closePlugin(), 100)
+	})
+
+	MessageBus.bind('preferences', (msg) => {
+		preferences = msg.preferences
+		Storage.set(Storage.getKey('PREFERENCES'), preferences).then((success) => {
+			if (success) {
+				FP.showNotification('Preferences saved')
+			} else {
+				FP.showNotification('Failed to save preferences. Please try again.')
+			}
+		})
+	})
+
+	MessageBus.bind('displayImpression', (msg) => {
+		FP.resizeUI(320, 540+124)
+		Storage.setMultiple({
+			[Storage.getKey('AD_LAST_SHOWN_DATE')]: Date.now(),
+			[Storage.getKey('AD_LAST_SHOWN_IMPRESSION')]: parseInt(AD_LAST_SHOWN_IMPRESSION)+1
+		})
+	})
+
+	MessageBus.bind('resetImpression', (msg) => {
+		Storage.set(Storage.getKey('AD_LAST_SHOWN_IMPRESSION'), 0)
+	})
+
+	MessageBus.bind('activate-license', (msg) => {
+		// Store license data from UI
+		const licenseData = {
+			licensed: true,
+			productId: msg.productId || 'gumroad',
+			licenseKeyHash: msg.licenseKey ? hashLicenseKey(msg.licenseKey) : null,
+			licenseKey: msg.licenseKey, // Store actual key for display
+			deviceId: UUID,
+			activatedAt: Date.now(),
+			purchase: msg.purchase || {},
+			uses: msg.uses || 1 // Include usage count from activation
+		}
 		
+		Storage.set(Storage.getKey('LICENSE_V1'), licenseData)
+			.then((success) => {
+				if (success) {
+					setCachedLicenseStatus(licenseData) // Update cache
+					FP.showNotification('You now have Super Tidy Pro')
+				} else {
+					FP.showNotification('Failed to save license. Please try again.')
+				}
+			})
+	})
+
+	MessageBus.bind('remove-license', (msg) => {
+		// Remove stored license
+		Storage.remove(Storage.getKey('LICENSE_V1'))
+			.then((success) => {
+				if (success) {
+					setCachedLicenseStatus(null) // Update cache
+					FP.showNotification('License unlinked from this device')
+				} else {
+					FP.showNotification('Failed to unlink license. Please try again.')
+				}
+			})
+	})
 	// Command triggered by user
 	if (cmd == 'rename') {
 		// RUNS WITH COUNTDOWN GATE
@@ -237,81 +318,5 @@ Storage.getMultiple([
 			AD_LAST_SHOWN_IMPRESSION: AD_LAST_SHOWN_IMPRESSION
 		})
 		FP.notifyUI({ type: 'selection', selection: FP.currentSelection() })
-
-		FP.onSelectionChange((selection) => {
-			FP.notifyUI({ type: 'selection', selection: selection })
-		})
-
-		FP.onUIMessage((msg) => {
-			if (msg.type === 'tidy') {
-				var RENAMING_ENABLED = msg.options.renaming
-				var REORDER_ENABLED = msg.options.reorder
-				var TIDY_ENABLED = msg.options.tidy
-				var PAGER_ENABLED = msg.options.pager
-
-				if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
-				if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
-				if (REORDER_ENABLED) cmdReorder(preferences.layout_paradigm || 'rows')
-				if (PAGER_ENABLED) cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
-				FP.showNotification('Super Tidy')
-				setTimeout(() => FP.closePlugin(), 100)
-			} else
-			if (msg.type === 'preferences') {
-				preferences = msg.preferences
-				Storage.set(Storage.getKey('PREFERENCES'), preferences).then((success) => {
-					if (success) {
-						FP.showNotification('Preferences saved')
-					} else {
-						FP.showNotification('Failed to save preferences. Please try again.')
-					}
-				})
-			} else
-			if (msg.type === 'displayImpression') {
-				FP.resizeUI(320, 540+124)
-				Storage.setMultiple({
-					[Storage.getKey('AD_LAST_SHOWN_DATE')]: Date.now(),
-					[Storage.getKey('AD_LAST_SHOWN_IMPRESSION')]: parseInt(AD_LAST_SHOWN_IMPRESSION)+1
-				})
-			}
-
-			if (msg.type === 'resetImpression') {
-				Storage.set(Storage.getKey('AD_LAST_SHOWN_IMPRESSION'), 0)
-			} else
-			if (msg.type === 'activate-license') {
-				// Store license data from UI
-				const licenseData = {
-					licensed: true,
-					productId: msg.productId || 'gumroad',
-					licenseKeyHash: msg.licenseKey ? hashLicenseKey(msg.licenseKey) : null,
-					licenseKey: msg.licenseKey, // Store actual key for display
-					deviceId: UUID,
-					activatedAt: Date.now(),
-					purchase: msg.purchase || {},
-					uses: msg.uses || 1 // Include usage count from activation
-				}
-				
-				Storage.set(Storage.getKey('LICENSE_V1'), licenseData)
-					.then((success) => {
-						if (success) {
-							setCachedLicenseStatus(licenseData) // Update cache
-							FP.showNotification('You now have Super Tidy Pro')
-						} else {
-							FP.showNotification('Failed to save license. Please try again.')
-						}
-					})
-			} else
-			if (msg.type === 'remove-license') {
-				// Remove stored license
-				Storage.remove(Storage.getKey('LICENSE_V1'))
-					.then((success) => {
-						if (success) {
-							setCachedLicenseStatus(null) // Update cache
-							FP.showNotification('License unlinked from this device')
-						} else {
-							FP.showNotification('Failed to unlink license. Please try again.')
-						}
-					})
-			}
-		})
 	}
 })

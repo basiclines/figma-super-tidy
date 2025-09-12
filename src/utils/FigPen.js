@@ -50,6 +50,15 @@ export default class FigPen {
         }
     }
 
+    clearUIListeners() {
+        if (this.designTool === FIGMA) {
+            figma.ui.onmessage = null
+        } else if (this.designTool === PENPOT) {
+            penpot.ui.onMessage = null
+            penpot.ui.onMessage(() => { });
+        }
+    }
+
     onSelectionChange(callback) {
         if (this.designTool === FIGMA) {
             figma.on('selectionchange', () => { callback(this.currentSelection()) })
