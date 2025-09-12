@@ -1,14 +1,16 @@
 c-toolbar {
 	position: relative;
 	z-index: 5;
-	display: block;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	padding: 0 16px 0 8px;
 	overflow: hidden;
 	border-bottom: solid 1px var(--color-separator);
 }
 c-toolbar nav, c-toolbar header { overflow: hidden; }
 
-c-toolbar nav ul { display: flex; flex-direction: row; float: left; }
+c-toolbar nav ul { display: flex; flex-direction: row; }
 c-toolbar nav li a {
 	display: block;
 	padding: 12px 8px;
@@ -17,3 +19,8 @@ c-toolbar nav li a {
 	transition: 0.05s ease-in color;
 }
 c-toolbar nav .active a, c-toolbar nav li a:hover { color: var(--color-text-primary); text-decoration: none; }
+
+c-toolbar .version {
+	font: var(--type-medium-normal);
+	color: var(--color-text-tertiary);
+}

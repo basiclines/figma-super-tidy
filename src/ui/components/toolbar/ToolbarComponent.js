@@ -2,6 +2,7 @@ import './ToolbarComponent.css'
 import Router from 'src/utils/Router'
 import Tracking from 'src/utils/Tracking'
 import Element from 'src/ui/Element'
+import packageJson from '@/package.json'
 
 class ToolbarComponent extends Element {
 
@@ -32,6 +33,7 @@ class ToolbarComponent extends Element {
 					<li class="${(isLicense) ? 'active' : ''}"><a href="${Router.routes.license}">License</a></li>
 				</ul>
 			</nav>
+			<div class="version">v${packageJson.version}</div>
 		`
 	}
 }
