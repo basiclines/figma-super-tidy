@@ -28,7 +28,7 @@ Storage.init(STORAGE_KEYS)
 let FP = new FigPen()
 
 const cmd = FP.currentCommand()
-figma.showUI(__html__, { visible: false })
+FP.openPlugin({ visible: false, name: 'Super Tidy', url: 'http://localhost:3000/dist/index.html' })
 
 // Simple hash function for license keys (don't store raw keys)
 function hashLicenseKey(key) {

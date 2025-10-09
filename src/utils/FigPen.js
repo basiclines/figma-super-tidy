@@ -13,12 +13,19 @@ export default class FigPen {
         }
     }
 
-    openPlugin({name, width, height}) {
+    openPlugin({name, width, height, url, visible}) {
         if (this.designTool === FIGMA) {
-            figma.showUI(__html__, { width: width, height: height })
+            figma.showUI(__html__, { width, height, visible })
         } else if (this.designTool === PENPOT) {
-            penpot.ui.open(name, "", { width: width, height: height })
+            penpot.ui.open(name, url, { width, height })
         }
+    }
+
+    listenToCanvas(callback) {
+        window.addEventListener('message', event => {
+            let msg = (this.designTool === FIGMA) ? event.data.pluginMessage : event
+            callback(msg)
+        })
     }
 
     notifyUI(message) {

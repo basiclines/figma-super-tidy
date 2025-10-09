@@ -4,6 +4,7 @@ import 'src/ui/FigmaUI.css'
 
 import Tracking from 'src/utils/Tracking'
 import Router from 'src/utils/Router'
+import FigPen from 'src/utils/FigPen'
 import Element from 'src/ui/Element'
 import { setCachedLicenseStatus } from 'src/payments/gate'
 
@@ -13,12 +14,13 @@ import 'src/ui/views/preferences/PreferencesView'
 import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
+let FP = new FigPen()
 
 class ui extends Element {
 
 	beforeMount() {
-		window.addEventListener('message', e => {
-			let msg = event.data.pluginMessage
+		
+		FP.listenToCanvas(msg => {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
 				this.data.license = msg.license
