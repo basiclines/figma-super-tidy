@@ -4,3 +4,5 @@
 secrets.json
 node_modules/
 dist/
+figma/dist/
+penpot/dist/

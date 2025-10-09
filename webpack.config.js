@@ -4,6 +4,15 @@ const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
+if (process.env.DESIGN_TOOL === 'figma') {
+	design_tool_dist = 'figma/dist'
+} else if (process.env.DESIGN_TOOL === 'penpot') {
+	design_tool_dist = 'penpot/dist'
+} else {
+	console.error('Invalid design tool. Please set the mode to figma or penpot.')
+	process.exit(1)
+}
+
 module.exports = (env, argv) => ({
 	mode: argv.mode === 'production' ? 'production' : 'development',
 
@@ -38,7 +47,7 @@ module.exports = (env, argv) => ({
 
 	output: {
 		filename: '[name].js',
-		path: path.resolve(__dirname, 'dist'), // Compile into a folder called "dist"
+		path: path.resolve(__dirname, design_tool_dist), // Compile into a folder called "dist"
 	},
 
 	// Tells Webpack to generate "ui.html" and to inline "ui.ts" into it
@@ -47,6 +56,7 @@ module.exports = (env, argv) => ({
 			'WP_ENV': JSON.stringify(process.env.NODE_ENV),
 			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY),
 			'WP_GUMROAD_PRODUCT_ID': JSON.stringify(secrets.GUMROAD_PRODUCT_ID),
+			'WP_DESIGN_TOOL': JSON.stringify(process.env.DESIGN_TOOL),
 		}),
 		new HtmlWebpackPlugin({
 			templateContent: `<root-ui></root-ui>`,

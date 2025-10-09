@@ -1,8 +1,10 @@
 {
   "version": "2.1.0",
   "scripts": {
-    "dev": "NODE_ENV=development npx webpack --mode=development --watch",
-    "build": "NODE_ENV=production npx webpack --mode=production",
+    "dev:figma": "NODE_ENV=development DESIGN_TOOL=figma npx webpack --mode=development --watch",
+    "build:figma": "NODE_ENV=production DESIGN_TOOL=figma npx webpack --mode=production",
+    "dev:penpot": "NODE_ENV=development DESIGN_TOOL=penpot npx webpack --mode=development --watch",
+    "build:penpot": "NODE_ENV=production DESIGN_TOOL=penpot npx webpack --mode=production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
