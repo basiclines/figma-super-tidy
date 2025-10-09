@@ -7,6 +7,12 @@ export default class FigPen {
 		this.designTool = designTool || WP_DESIGN_TOOL
 	}
 
+    currentCommand() {
+        if (this.designTool === FIGMA) {
+            return figma.command
+        }
+    }
+
     openPlugin({name, width, height}) {
         if (this.designTool === FIGMA) {
             figma.showUI(__html__, { width: width, height: height })

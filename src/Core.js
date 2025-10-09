@@ -1,5 +1,6 @@
 import Tracking from 'src/utils/Tracking'
 import Storage from 'src/utils/Storage'
+import FigPen from 'src/utils/FigPen'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
 import { validateLicenseOnly } from 'src/payments/license'
 import { 
@@ -24,8 +25,9 @@ const STORAGE_KEYS = {
 }
 
 Storage.init(STORAGE_KEYS)
+let FP = new FigPen()
 
-const cmd = figma.command
+const cmd = FP.currentCommand()
 figma.showUI(__html__, { visible: false })
 
 // Simple hash function for license keys (don't store raw keys)

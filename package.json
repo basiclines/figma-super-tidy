@@ -3,7 +3,7 @@
   "scripts": {
     "dev:figma": "NODE_ENV=development DESIGN_TOOL=figma npx webpack --mode=development --watch",
     "build:figma": "NODE_ENV=production DESIGN_TOOL=figma npx webpack --mode=production",
-    "dev:penpot": "NODE_ENV=development DESIGN_TOOL=penpot npx webpack --mode=development --watch",
+    "dev:penpot": "NODE_ENV=development DESIGN_TOOL=penpot npx webpack-dev-server --mode=development",
     "build:penpot": "NODE_ENV=production DESIGN_TOOL=penpot npx webpack --mode=production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@basiclines/leo": "^0.6.4",
-    "ua-parser-js": "^0.7.24"
+    "ua-parser-js": "^0.7.24",
+    "webpack-dev-server": "^3.11.3"
   }
 }
