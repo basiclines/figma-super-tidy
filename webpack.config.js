@@ -1,7 +1,7 @@
 const secrets = require('./secrets.json')
 const webpack = require('webpack')
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin')
 const path = require('path')
 
 if (process.env.DESIGN_TOOL === 'figma') {
@@ -28,12 +28,40 @@ module.exports = (env, argv) => ({
 
 	module: {
 		rules: [
-			// Enables including CSS by doing "import './file.css'" in your TypeScript code
-			{ test: /\.css$/, loader: [{ loader: 'style-loader' }, { loader: 'css-loader' }] },
+			// Enables including CSS by doing "import './file.css'" in your JavaScript code
+			{ 
+				test: /\.css$/, 
+				use: [
+					'style-loader', 
+					{
+						loader: 'css-loader',
+						options: {
+							// Disable URL processing to avoid issues with data URLs
+							url: false,
+							// Handle imports properly
+							import: true,
+						},
+					}
+				] 
+			},
 
-			{ test: /\.(png|jpg|gif|webp)$/, loader: [{ loader: 'url-loader' }] },
+			// Handle images and assets
+			{ 
+				test: /\.(png|jpg|gif|webp|svg)$/, 
+				type: 'asset/inline' // Webpack 5 way to inline assets
+			},
 
-			{ test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" }
+			// JavaScript/ES6+ processing
+			{ 
+				test: /\.js$/, 
+				exclude: /node_modules/, 
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: ['@babel/preset-env']
+					}
+				}
+			}
 		]
 	},
 
@@ -50,22 +78,42 @@ module.exports = (env, argv) => ({
 	output: {
 		filename: '[name].js',
 		path: path.resolve(__dirname, design_tool_dist), // Compile into a folder called "dist"
+		clean: true, // Clean output directory before build
+		environment: {
+			// Ensure compatibility with older environments
+			arrowFunction: false,
+			const: false,
+			destructuring: false,
+			forOf: false,
+			module: false,
+		}
 	},
 
-	// Tells Webpack to generate "ui.html" and to inline "ui.ts" into it
+	// Modern webpack 5 optimizations
+	optimization: {
+		// Enable tree shaking for better bundle size
+		usedExports: true,
+		sideEffects: false,
+		// Disable code splitting for Figma plugin compatibility
+		splitChunks: false,
+	},
+
+	// Tells Webpack to generate "ui.html" and to inline "ui.js" into it
 	plugins: [
 		new webpack.DefinePlugin({
 			'WP_ENV': JSON.stringify(process.env.NODE_ENV),
 			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY),
 			'WP_GUMROAD_PRODUCT_ID': JSON.stringify(secrets.GUMROAD_PRODUCT_ID),
 			'WP_DESIGN_TOOL': JSON.stringify(process.env.DESIGN_TOOL),
+			// Define globals for Figma plugin environment
+			'self': 'globalThis',
+			'global': 'globalThis',
 		}),
 		new HtmlWebpackPlugin({
 			templateContent: `<root-ui></root-ui>`,
 			filename: 'index.html',
-			inlineSource: '.(js)$',
 			chunks: ['ui'],
 		}),
-		new HtmlWebpackInlineSourcePlugin()
+		new HtmlInlineScriptPlugin()
 	]
 })
