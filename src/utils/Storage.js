@@ -12,7 +12,7 @@ class Storage {
 	constructor() {
 		this.keys = new Map()
 		this.initialized = false
-		this.FigPen = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
+		this.FigPen = new FigPen(CONFIG)
 		
 		if (!singleton) singleton = this
 		return singleton

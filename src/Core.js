@@ -26,10 +26,10 @@ const STORAGE_KEYS = {
 }
 
 Storage.init(STORAGE_KEYS)
-let FP = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
+const FP = new FigPen(CONFIG)
 
 const cmd = FP.currentCommand()
-FP.openPluginUI({ visible: false })
+FP.openUIHidden()
 
 // Simple hash function for license keys (don't store raw keys)
 function hashLicenseKey(key) {

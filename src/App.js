@@ -15,7 +15,7 @@ import 'src/ui/views/preferences/PreferencesView'
 import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
-let FP = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
+let FP = new FigPen(CONFIG)
 
 class ui extends Element {
 

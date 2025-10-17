@@ -3,23 +3,35 @@ const PENPOT = 'penpot'
 
 export default class FigPen {
 	
-    constructor(designTool, name, url) {
+    constructor({designTool, name, url, width, height}) {
 		this.designTool = designTool
 		this.name = name
 		this.url = url
+        this.width = width
+        this.height = height
 	}
 
     currentCommand() {
         if (this.designTool === FIGMA) {
             return figma.command
+        } else if (this.designTool === PENPOT) {
+            return null
         }
     }
 
-    openPluginUI({width, height, visible}) {
+    openUI() {
         if (this.designTool === FIGMA) {
-            figma.showUI(__html__, { width, height, visible })
+            figma.showUI(__html__, { width: this.width, height: this.height })
         } else if (this.designTool === PENPOT) {
-            penpot.ui.open(this.name, this.url, { width, height })
+            penpot.ui.open(this.name, this.url, { width: this.width, height: this.height })
+        }
+    }
+
+    openUIHidden() {
+        if (this.designTool === FIGMA) {
+            figma.showUI(__html__, { visible: false })
+        } else if (this.designTool === PENPOT) {
+            penpot.ui.open(this.name, this.url, { width: this.width, height: this.height })
         }
     }
 
