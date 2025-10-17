@@ -82,7 +82,7 @@ export default class FigPen {
     notifyEditor(message) {
         console.log('notifyCanvas', message)
         if (this.designTool === FIGMA) {
-            parent.postMessage(message)
+            parent.postMessage({ pluginMessage: message }, '*')
         } else if (this.designTool === PENPOT) {
             parent.postMessage(message, '*')
         }
