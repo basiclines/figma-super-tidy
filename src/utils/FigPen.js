@@ -53,6 +53,23 @@ export default class FigPen {
         }
     }
 
+    onSelectionChange(callback) {
+        let selection = this.currentSelection()
+        if (this.designTool === FIGMA) {
+            figma.on('selectionchange', () => { callback(this.currentSelection()) })
+        } else if (this.designTool === PENPOT) {
+            penpot.on('selectionchange', () => { callback(this.currentSelection()) })
+        }
+    }
+
+    currentSelection() {
+        if (this.designTool === FIGMA) {
+            return figma.currentPage.selection
+        } else if (this.designTool === PENPOT) {
+            return penpot.selection
+        }
+    }
+
     notifyUI(message) {
         console.log('notifyUI', message)
         if (this.designTool === FIGMA) {
@@ -87,6 +104,22 @@ export default class FigPen {
         this.notifyEditor({ type: 'ui-ready' })
     }
 
+    resizeUI(width, height) {
+        if (this.designTool === FIGMA) {
+            figma.ui.resize(width, height)
+        } else if (this.designTool === PENPOT) {
+            penpot.ui.resize(width, height)
+        }
+    }
+
+    closePlugin() {
+        if (this.designTool === FIGMA) {
+            figma.closePlugin()
+        } else if (this.designTool === PENPOT) {
+            penpot.closePlugin()
+        }
+    }
+
     getStorageItem(key) {
         return new Promise((resolve, reject) => {
             if (this.designTool === FIGMA) {
@@ -114,6 +147,22 @@ export default class FigPen {
             return figma.currentPage.selection
         } else if (this.designTool === PENPOT) {
             return penpot.selection
+        }
+    }
+
+    currentPage() {
+        if (this.designTool === FIGMA) {
+            return figma.currentPage
+        } else if (this.designTool === PENPOT) {
+            return penpot.currentPage
+        }
+    }
+
+    showNotification(text) {
+        if (this.designTool === FIGMA) {
+            figma.notify(text)
+        } else if (this.designTool === PENPOT) {
+            console.warn("showNotification not supported for PenPot:", text)
         }
     }
 
