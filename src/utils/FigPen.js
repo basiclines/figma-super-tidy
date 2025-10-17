@@ -125,7 +125,7 @@ export default class FigPen {
             if (this.designTool === FIGMA) {
                 figma.clientStorage.getAsync(key).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
-                let item = penpot.localStorage.getItem(key)
+                let item = JSON.parse(penpot.localStorage.getItem(key))
                 console.log('getStorageItem', key, item)
                 resolve(item)
             }
