@@ -80,9 +80,9 @@ class ui extends Element {
 			if (formView && formView.startCountdown) {
 				formView.startCountdown(seconds, commandName, () => {
 					// Send completion message back to Core.js
-					parent.postMessage({ 
-						pluginMessage: { type: 'direct-countdown-complete' } 
-					}, '*')
+					FP.notifyEditor({ 
+						 type: 'direct-countdown-complete'
+					})
 				})
 			} else {
 				console.error('[App] FormView not found or startCountdown method not available')

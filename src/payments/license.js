@@ -1,8 +1,12 @@
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 // License verification and management API module
 // Handles all Gumroad API interactions and license operations
 
 const GUMROAD_PRODUCT_ID = WP_GUMROAD_PRODUCT_ID
 // const MAX_USAGE_LIMIT = 2 // Temporarily disabled - will re-add in future
+
+let FP = new FigPen(CONFIG)
 
 /**
  * Manually encodes form data for x-www-form-urlencoded requests
@@ -148,23 +152,19 @@ export function validateLicenseOnly(licenseKey) {
  * @param {number} uses - Current usage count
  */
 export function activateLicense(licenseKey, purchase, uses) {
-	parent.postMessage({
-		pluginMessage: {
-			type: 'activate-license',
-			licenseKey: licenseKey,
-			purchase: purchase,
-			uses: uses
-		}
-	}, '*')
+	FP.notifyEditor({
+		type: 'activate-license',
+		licenseKey: licenseKey,
+		purchase: purchase,
+		uses: uses
+	})
 }
 
 /**
  * Removes/unlinks a license by sending message to Core.js
  */
 export function removeLicense() {
-	parent.postMessage({
-		pluginMessage: { type: 'remove-license' }
-	}, '*')
+	FP.notifyEditor({ type: 'remove-license' })
 }
 
 /**

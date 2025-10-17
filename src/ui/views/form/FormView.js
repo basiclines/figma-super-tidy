@@ -123,12 +123,10 @@ class FormView extends Element {
 	
 	executeCommand(commandName, options) {
 		// Send command to Core.js
-		parent.postMessage({ 
-			pluginMessage: { 
-				type: commandName, 
-				options: options 
-			} 
-		}, '*')
+		this.FP.notifyEditor({ 
+			type: commandName, 
+			options: options 
+		})
 	}
 
 

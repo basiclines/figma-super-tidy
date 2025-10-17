@@ -2,7 +2,6 @@ import Tracking from 'src/utils/Tracking'
 import Storage from 'src/utils/Storage'
 import FigPen from 'src/utils/FigPen'
 import { shouldShowCountdown, getCountdownSeconds, setCachedLicenseStatus } from 'src/payments/gate'
-import { validateLicenseOnly } from 'src/payments/license'
 import { 
 	getNodesGroupedbyPosition, 
 	getNameByPosition, 
@@ -142,10 +141,9 @@ Storage.getMultiple([
 	Storage.getKey('LICENSE_V1') // license data
 ]).then(storageData => {
 	let UUID = storageData[Storage.getKey('UUID')]
-	let preferences = storageData[Storage.getKey('PREFERENCES')]
+	let preferencesSaved = storageData[Storage.getKey('PREFERENCES')]
 	let AD_LAST_SHOWN_DATE = storageData[Storage.getKey('AD_LAST_SHOWN_DATE')] || 572083200 // initial date, if no date was saved previously
 	let AD_LAST_SHOWN_IMPRESSION = storageData[Storage.getKey('AD_LAST_SHOWN_IMPRESSION')] || 0 // initial impressions
-	let spacing = storageData[Storage.getKey('SPACING')]
 	let license = storageData[Storage.getKey('LICENSE_V1')] // license data
 
 	let SPACING = { x: 100, y: 200 }
@@ -163,6 +161,7 @@ Storage.getMultiple([
 		rename_strategy: RENAME_STRATEGY_REPLACE,
 		layout_paradigm: LAYOUT_PARADIGM
 	}
+	let preferences = preferencesSaved || DEFAULT_PREFERENCES
 
 	if (!UUID) {
 		UUID = Tracking.createUUID()
@@ -178,7 +177,7 @@ Storage.getMultiple([
 			type: 'init-hidden',
 			UUID: UUID,
 			cmd: cmd,
-			preferences: preferences || DEFAULT_PREFERENCES,
+			preferences: preferences,
 			license: license
 		})
 	})
@@ -242,6 +241,7 @@ Storage.getMultiple([
 
 		FP.onUIMessage((msg) => {
 			if (msg.type === 'tidy') {
+				console.log('tidy', msg)
 				var RENAMING_ENABLED = msg.options.renaming
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
