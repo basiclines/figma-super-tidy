@@ -21,7 +21,7 @@ export default class FigPen {
 
     openUI() {
         if (this.designTool === FIGMA) {
-            figma.showUI(__html__, { width: this.width, height: this.height })
+            figma.showUI(__html__, { themeColors: true, width: this.width, height: this.height })
         } else if (this.designTool === PENPOT) {
             penpot.ui.open(this.name, this.url, { width: this.width, height: this.height })
         }
@@ -30,7 +30,7 @@ export default class FigPen {
     openUIHidden() {
         console.log('openUIHidden')
         if (this.designTool === FIGMA) {
-            figma.showUI(__html__, { visible: false })
+            figma.showUI(__html__, { themeColors: true, visible: false })
         } else if (this.designTool === PENPOT) {
             penpot.ui.open(this.name, this.url, { width: this.width, height: this.height })
         }
@@ -155,6 +155,14 @@ export default class FigPen {
             return figma.currentPage
         } else if (this.designTool === PENPOT) {
             return penpot.currentPage
+        }
+    }
+
+    currentTheme() {
+        if (this.designTool === FIGMA) {
+            console.warn('currentTheme not supported in Figma. More info: https://developers.figma.com/docs/plugins/css-variables/')
+        } else if (this.designTool === PENPOT) {
+            return penpot.theme
         }
     }
 

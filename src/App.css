@@ -46,8 +46,13 @@
 	--color-separator: rgba(0, 0, 0, 0.12);
 }
 
-body { text-align: left; overflow: hidden; background-color: var(--color-background-primary); }
-root-ui { transition: opacity 0.05s linear; display: block; position: relative; height: 539px; }
+/* Dark theme for both Penpot and Figma */
+root-ui[theme="dark"], .figma-dark body {
+
+}
+
+body { text-align: left; overflow: hidden; }
+root-ui { transition: opacity 0.05s linear; display: block; position: relative; height: 539px; background-color: var(--color-background-primary); }
 root-ui[notready] { opacity: 0; pointer-events: none; }
 
 .c-icon {

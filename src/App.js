@@ -27,7 +27,7 @@ class ui extends Element {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
 				this.data.license = msg.license
-				
+				this.attrs.theme = msg.theme
 				// Update UI context license cache (separate from Core.js context)
 				setCachedLicenseStatus(msg.license)
 				

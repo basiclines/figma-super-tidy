@@ -27,6 +27,7 @@ const STORAGE_KEYS = {
 Storage.init(STORAGE_KEYS)
 const FP = new FigPen(CONFIG)
 const cmd = FP.currentCommand()
+const theme = FP.currentTheme()
 
 // Simple hash function for license keys (don't store raw keys)
 function hashLicenseKey(key) {
@@ -175,6 +176,7 @@ Storage.getMultiple([
 		console.log('UI ready')
 		FP.notifyUI({
 			type: 'init-hidden',
+			theme: theme,
 			UUID: UUID,
 			cmd: cmd,
 			preferences: preferences,
