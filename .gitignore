@@ -6,3 +6,5 @@ node_modules/
 dist/
 figma/dist/
 penpot/dist/
+# Local Netlify folder
+.netlify

@@ -5,6 +5,7 @@
     "build:figma": "NODE_ENV=production DESIGN_TOOL=figma npx webpack --mode=production",
     "dev:penpot": "NODE_ENV=development DESIGN_TOOL=penpot npx webpack --mode=development --watch & npx serve penpot --cors",
     "build:penpot": "NODE_ENV=production DESIGN_TOOL=penpot npx webpack --mode=production",
+    "deploy:prod:penpot": "netlify deploy --prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
   "dependencies": {
     "@basiclines/leo": "^0.6.4",
     "core-js": "^3.33.0",
+    "netlify-cli": "^23.9.1",
     "ua-parser-js": "^0.7.24",
     "webpack-dev-server": "^4.15.1"
   }

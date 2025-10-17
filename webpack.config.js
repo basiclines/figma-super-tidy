@@ -15,6 +15,12 @@ if (process.env.DESIGN_TOOL === 'figma') {
 	process.exit(1)
 }
 
+if (process.env.NODE_ENV === 'production') {
+	PLUGIN_URL = 'https://super-tidy.netlify.app/dist/index.html'
+} else {
+	PLUGIN_URL = 'http://localhost:3000/dist/index.html'
+}
+
 module.exports = (env, argv) => ({
 	mode: argv.mode === 'production' ? 'production' : 'development',
 
@@ -105,6 +111,7 @@ module.exports = (env, argv) => ({
 			'WP_AMPLITUDE_KEY': JSON.stringify(secrets.AMPLITUDE_KEY),
 			'WP_GUMROAD_PRODUCT_ID': JSON.stringify(secrets.GUMROAD_PRODUCT_ID),
 			'WP_DESIGN_TOOL': JSON.stringify(process.env.DESIGN_TOOL),
+			'WP_PLUGIN_URL': JSON.stringify(PLUGIN_URL),
 			// Define globals for Figma plugin environment
 			'self': 'globalThis',
 			'global': 'globalThis',
