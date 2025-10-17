@@ -36,15 +36,16 @@ export default class FigPen {
         }
     }
 
-    listenToCanvas(callback) {
+    onEditorMessage(callback) {
         window.addEventListener('message', event => {
-            console.log('listenToCanvas', event)
-            let msg = (this.designTool === FIGMA) ? event.data.pluginMessage : event
+            console.log('onEditorMessage', event)
+            let msg = (this.designTool === FIGMA) ? event.data.pluginMessage : event.data
             callback(msg)
         })
     }
 
-    listenToUI(callback) {
+    onUIMessage(callback) {
+        console.log('onUIMessage', callback)
         if (this.designTool === FIGMA) {
             figma.ui.onmessage = callback
         } else if (this.designTool === PENPOT) {
@@ -61,7 +62,7 @@ export default class FigPen {
         }
     }
 
-    notifyCanvas(message) {
+    notifyEditor(message) {
         console.log('notifyCanvas', message)
         if (this.designTool === FIGMA) {
             parent.postMessage(message)
@@ -70,12 +71,30 @@ export default class FigPen {
         }
     }
 
+    waitForUIReady() {
+        this.openUIHidden()
+
+        return new Promise((resolve, reject) => {
+            this.onUIMessage(msg => {
+                if (msg.type === 'ui-ready') {
+                    resolve()
+                }
+            })
+        })
+    }
+
+    initializeUI() {
+        this.notifyEditor({ type: 'ui-ready' })
+    }
+
     getStorageItem(key) {
         return new Promise((resolve, reject) => {
             if (this.designTool === FIGMA) {
                 figma.clientStorage.getAsync(key).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
-                resolve(penpot.localStorage.getItem(key))
+                let item = penpot.localStorage.getItem(key)
+                console.log('getStorageItem', key, item)
+                resolve(item)
             }
         })
     }

@@ -23,10 +23,7 @@ class ui extends Element {
 
 		console.log('beforeMount')
 
-		FP.notifyCanvas({ type: 'ui-ready' });
-
-		
-		FP.listenToCanvas(msg => {
+		FP.onEditorMessage(msg => {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
 				this.data.license = msg.license
@@ -57,6 +54,8 @@ class ui extends Element {
 			preferences: '#preferences',
 			license: '#license'
 		})
+
+		FP.initializeUI()
 	}
 
 	bind() {

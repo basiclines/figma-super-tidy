@@ -29,12 +29,6 @@ Storage.init(STORAGE_KEYS)
 const FP = new FigPen(CONFIG)
 const cmd = FP.currentCommand()
 
-console.log('canvas', this)
-FP.listenToUI(msg => {
-	console.log('Canvas message received:', msg)
-})
-FP.openUIHidden()
-
 // Simple hash function for license keys (don't store raw keys)
 function hashLicenseKey(key) {
 	try {
@@ -161,7 +155,7 @@ Storage.getMultiple([
 	let RENAME_STRATEGY_REPLACE = 'replace'
 	let RENAME_STRATEGY_MERGE = 'merge'
 	let LAYOUT_PARADIGM = 'rows'
-	let PREFERENCES = {
+	let DEFAULT_PREFERENCES = {
 		spacing: SPACING,
 		start_name: START_NAME,
 		pager_variable: PAGER_VARIABLE,
@@ -178,23 +172,17 @@ Storage.getMultiple([
 	// Cache license status for gate decisions
 	setCachedLicenseStatus(license)
 
-	// legacy spacing preference
-	if (typeof spacing != 'undefined') {
-		PREFERENCES.spacing = spacing
-	}
-
-	if (typeof preferences == 'undefined') {
-		preferences = PREFERENCES
-	}
-
-	FP.notifyUI({
-		type: 'init-hidden',
-		UUID: UUID,
-		cmd: cmd,
-		preferences: preferences,
-		license: license
+	FP.waitForUIReady().then(() => {
+		console.log('UI ready')
+		FP.notifyUI({
+			type: 'init-hidden',
+			UUID: UUID,
+			cmd: cmd,
+			preferences: preferences || DEFAULT_PREFERENCES,
+			license: license
+		})
 	})
-
+		
 	// Command triggered by user
 	if (cmd == 'rename') {
 		// RUNS WITH COUNTDOWN GATE
