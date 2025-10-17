@@ -137,7 +137,8 @@ export default class FigPen {
             if (this.designTool === FIGMA) {
                 figma.clientStorage.setAsync(key, value).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
-                resolve(penpot.localStorage.setItem(key, value))
+                let item = JSON.stringify(value)
+                resolve(penpot.localStorage.setItem(key, item))
             }
         })
     }

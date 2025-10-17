@@ -182,6 +182,8 @@ Storage.getMultiple([
 			preferences: preferences,
 			license: license
 		})
+		// Make sure initial selection is sent to the UI
+		FP.notifyUI({ type: 'selection', selection: FP.currentSelection() })
 	})
 		
 	// Command triggered by user
