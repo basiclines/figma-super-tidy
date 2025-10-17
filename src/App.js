@@ -21,8 +21,6 @@ class ui extends Element {
 
 	beforeMount() {
 
-		console.log('beforeMount')
-
 		FP.onEditorMessage(msg => {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences

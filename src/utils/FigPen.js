@@ -28,7 +28,6 @@ export default class FigPen {
     }
 
     openUIHidden() {
-        console.log('openUIHidden')
         if (this.designTool === FIGMA) {
             figma.showUI(__html__, { themeColors: true, visible: false })
         } else if (this.designTool === PENPOT) {
@@ -38,14 +37,12 @@ export default class FigPen {
 
     onEditorMessage(callback) {
         window.addEventListener('message', event => {
-            console.log('onEditorMessage', event)
             let msg = (this.designTool === FIGMA) ? event.data.pluginMessage : event.data
             callback(msg)
         })
     }
 
     onUIMessage(callback) {
-        console.log('onUIMessage', callback)
         if (this.designTool === FIGMA) {
             figma.ui.onmessage = callback
         } else if (this.designTool === PENPOT) {
@@ -54,7 +51,6 @@ export default class FigPen {
     }
 
     onSelectionChange(callback) {
-        let selection = this.currentSelection()
         if (this.designTool === FIGMA) {
             figma.on('selectionchange', () => { callback(this.currentSelection()) })
         } else if (this.designTool === PENPOT) {
@@ -71,7 +67,6 @@ export default class FigPen {
     }
 
     notifyUI(message) {
-        console.log('notifyUI', message)
         if (this.designTool === FIGMA) {
             figma.ui.postMessage(message)
         } else if (this.designTool === PENPOT) {
@@ -80,7 +75,6 @@ export default class FigPen {
     }
 
     notifyEditor(message) {
-        console.log('notifyCanvas', message)
         if (this.designTool === FIGMA) {
             parent.postMessage({ pluginMessage: message }, '*')
         } else if (this.designTool === PENPOT) {
@@ -126,7 +120,6 @@ export default class FigPen {
                 figma.clientStorage.getAsync(key).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
                 let item = JSON.parse(penpot.localStorage.getItem(key))
-                console.log('getStorageItem', key, item)
                 resolve(item)
             }
         })

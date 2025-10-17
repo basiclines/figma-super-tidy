@@ -173,7 +173,6 @@ Storage.getMultiple([
 	setCachedLicenseStatus(license)
 
 	FP.waitForUIReady().then(() => {
-		console.log('UI ready')
 		FP.notifyUI({
 			type: 'init-hidden',
 			theme: theme,
@@ -245,7 +244,6 @@ Storage.getMultiple([
 
 		FP.onUIMessage((msg) => {
 			if (msg.type === 'tidy') {
-				console.log('tidy', msg)
 				var RENAMING_ENABLED = msg.options.renaming
 				var REORDER_ENABLED = msg.options.reorder
 				var TIDY_ENABLED = msg.options.tidy
