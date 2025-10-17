@@ -52,22 +52,6 @@ module.exports = (env, argv) => ({
 		path: path.resolve(__dirname, design_tool_dist), // Compile into a folder called "dist"
 	},
 
-	// Dev server configuration
-	devServer: {
-		contentBase: path.join(__dirname, design_tool_root),
-		compress: true,
-		port: 3000,
-		hot: true,
-		open: true,
-		writeToDisk: true, // Important for Figma/Penpot plugins to read the files
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-			'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
-		},
-		disableHostCheck: true, // Disable host check for easier development
-	},
-
 	// Tells Webpack to generate "ui.html" and to inline "ui.ts" into it
 	plugins: [
 		new webpack.DefinePlugin({

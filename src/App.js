@@ -7,6 +7,7 @@ import Router from 'src/utils/Router'
 import FigPen from 'src/utils/FigPen'
 import Element from 'src/ui/Element'
 import { setCachedLicenseStatus } from 'src/payments/gate'
+import CONFIG from 'src/Config'
 
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
@@ -14,7 +15,7 @@ import 'src/ui/views/preferences/PreferencesView'
 import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
-let FP = new FigPen()
+let FP = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
 
 class ui extends Element {
 

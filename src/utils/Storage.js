@@ -4,6 +4,7 @@
  */
 
 import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 
 let singleton = null
 
@@ -11,7 +12,7 @@ class Storage {
 	constructor() {
 		this.keys = new Map()
 		this.initialized = false
-		this.FigPen = new FigPen()
+		this.FigPen = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
 		
 		if (!singleton) singleton = this
 		return singleton

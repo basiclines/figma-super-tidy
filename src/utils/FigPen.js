@@ -3,8 +3,10 @@ const PENPOT = 'penpot'
 
 export default class FigPen {
 	
-    constructor(designTool) {
-		this.designTool = designTool || WP_DESIGN_TOOL
+    constructor(designTool, name, url) {
+		this.designTool = designTool
+		this.name = name
+		this.url = url
 	}
 
     currentCommand() {
@@ -13,11 +15,11 @@ export default class FigPen {
         }
     }
 
-    openPlugin({name, width, height, url, visible}) {
+    openPluginUI({width, height, visible}) {
         if (this.designTool === FIGMA) {
             figma.showUI(__html__, { width, height, visible })
         } else if (this.designTool === PENPOT) {
-            penpot.ui.open(name, url, { width, height })
+            penpot.ui.open(this.name, this.url, { width, height })
         }
     }
 

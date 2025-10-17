@@ -11,6 +11,7 @@ import {
 	applyPagerNumbers, 
 	applyRenameStrategy 
 } from 'src/utils/LayoutUtils'
+import CONFIG from 'src/Config'
 
 const UI_HEIGHT = 540
 
@@ -25,10 +26,10 @@ const STORAGE_KEYS = {
 }
 
 Storage.init(STORAGE_KEYS)
-let FP = new FigPen()
+let FP = new FigPen(CONFIG.designTool, CONFIG.name, CONFIG.url)
 
 const cmd = FP.currentCommand()
-FP.openPlugin({ visible: false, name: 'Super Tidy', url: 'http://localhost:3000/dist/index.html' })
+FP.openPluginUI({ visible: false })
 
 // Simple hash function for license keys (don't store raw keys)
 function hashLicenseKey(key) {
