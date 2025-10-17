@@ -27,8 +27,12 @@ const STORAGE_KEYS = {
 
 Storage.init(STORAGE_KEYS)
 const FP = new FigPen(CONFIG)
-
 const cmd = FP.currentCommand()
+
+console.log('canvas', this)
+FP.listenToUI(msg => {
+	console.log('Canvas message received:', msg)
+})
 FP.openUIHidden()
 
 // Simple hash function for license keys (don't store raw keys)
@@ -183,7 +187,7 @@ Storage.getMultiple([
 		preferences = PREFERENCES
 	}
 
-	figma.ui.postMessage({
+	FP.notifyUI({
 		type: 'init-hidden',
 		UUID: UUID,
 		cmd: cmd,

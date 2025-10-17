@@ -28,6 +28,7 @@ export default class FigPen {
     }
 
     openUIHidden() {
+        console.log('openUIHidden')
         if (this.designTool === FIGMA) {
             figma.showUI(__html__, { visible: false })
         } else if (this.designTool === PENPOT) {
@@ -37,16 +38,35 @@ export default class FigPen {
 
     listenToCanvas(callback) {
         window.addEventListener('message', event => {
+            console.log('listenToCanvas', event)
             let msg = (this.designTool === FIGMA) ? event.data.pluginMessage : event
             callback(msg)
         })
     }
 
+    listenToUI(callback) {
+        if (this.designTool === FIGMA) {
+            figma.ui.onmessage = callback
+        } else if (this.designTool === PENPOT) {
+            penpot.ui.onMessage((message) => { callback(message) });
+        }
+    }
+
     notifyUI(message) {
+        console.log('notifyUI', message)
         if (this.designTool === FIGMA) {
             figma.ui.postMessage(message)
         } else if (this.designTool === PENPOT) {
             penpot.ui.sendMessage(message)
+        }
+    }
+
+    notifyCanvas(message) {
+        console.log('notifyCanvas', message)
+        if (this.designTool === FIGMA) {
+            parent.postMessage(message)
+        } else if (this.designTool === PENPOT) {
+            parent.postMessage(message, '*')
         }
     }
 
@@ -55,7 +75,7 @@ export default class FigPen {
             if (this.designTool === FIGMA) {
                 figma.clientStorage.getAsync(key).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
-                resolve(context.LocalStorage.get(key))
+                resolve(penpot.localStorage.getItem(key))
             }
         })
     }
@@ -65,7 +85,7 @@ export default class FigPen {
             if (this.designTool === FIGMA) {
                 figma.clientStorage.setAsync(key, value).then(resolve).catch(reject)
             } else if (this.designTool === PENPOT) {
-                resolve(context.LocalStorage.set(key, value))
+                resolve(penpot.localStorage.setItem(key, value))
             }
         })
     }
@@ -74,7 +94,7 @@ export default class FigPen {
         if (this.designTool === FIGMA) {
             return figma.currentPage.selection
         } else if (this.designTool === PENPOT) {
-            return context.selection
+            return penpot.selection
         }
     }
 

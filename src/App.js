@@ -20,6 +20,11 @@ let FP = new FigPen(CONFIG)
 class ui extends Element {
 
 	beforeMount() {
+
+		console.log('beforeMount')
+
+		FP.notifyCanvas({ type: 'ui-ready' });
+
 		
 		FP.listenToCanvas(msg => {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {

@@ -5,6 +5,7 @@
     "icon": "./dist/icon.png",
     "permissions": [
         "content:read",
-        "content:write"
+        "content:write",
+        "allow:localstorage"
     ]
 }
