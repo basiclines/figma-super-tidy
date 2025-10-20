@@ -2,7 +2,7 @@
   "name": "Super Tidy",
   "id": "731260060173130163",
   "api": "1.0.0",
-  "ui": "dist/ui.html",
+  "ui": "dist/index.html",
   "main": "dist/core.js",
 	"documentAccess": "dynamic-page",
 	"networkAccess": {

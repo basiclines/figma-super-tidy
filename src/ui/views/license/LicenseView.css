@@ -61,7 +61,7 @@ v-license .button:disabled {
 }
 
 v-license .license-info {
-  background: var(--color-bg-secondary, #f5f5f5);
+  background: var(--color-decorator-soft);
   border-radius: 4px;
   padding: 16px;
   margin: 20px 0 0;
@@ -100,7 +100,7 @@ v-license .support-section p {
 }
 
 v-license .support-section a {
-  color: var(--color-text-brand, #18a0fb);
+  color: var(--color-interactive-positive);
   text-decoration: none;
   font-weight: 500;
 }

@@ -1,0 +1,11 @@
+{
+    "name": "Super Tidy",
+    "description": "Plugin description",
+    "code": "./dist/core.js",
+    "icon": "./icon.png",
+    "permissions": [
+        "content:read",
+        "content:write",
+        "allow:localstorage"
+    ]
+}

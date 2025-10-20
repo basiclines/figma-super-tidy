@@ -4,8 +4,10 @@ import 'src/ui/FigmaUI.css'
 
 import Tracking from 'src/utils/Tracking'
 import Router from 'src/utils/Router'
+import FigPen from 'src/utils/FigPen'
 import Element from 'src/ui/Element'
 import { setCachedLicenseStatus } from 'src/payments/gate'
+import CONFIG from 'src/Config'
 
 import 'src/ui/components/toolbar/ToolbarComponent'
 import 'src/ui/views/form/FormView'
@@ -13,16 +15,17 @@ import 'src/ui/views/preferences/PreferencesView'
 import 'src/ui/views/license/LicenseView'
 import 'src/ui/components/display/DisplayComponent'
 
+let FP = new FigPen(CONFIG)
 
 class ui extends Element {
 
 	beforeMount() {
-		window.addEventListener('message', e => {
-			let msg = event.data.pluginMessage
+
+		FP.onEditorMessage(msg => {
 			if (msg.type == 'init-hidden' || msg.type == 'init' || msg.type == 'init-direct') {
 				this.data.preferences = msg.preferences
 				this.data.license = msg.license
-				
+				this.attrs.theme = msg.theme
 				// Update UI context license cache (separate from Core.js context)
 				setCachedLicenseStatus(msg.license)
 				
@@ -49,6 +52,8 @@ class ui extends Element {
 			preferences: '#preferences',
 			license: '#license'
 		})
+
+		FP.initializeUI()
 	}
 
 	bind() {
@@ -73,9 +78,9 @@ class ui extends Element {
 			if (formView && formView.startCountdown) {
 				formView.startCountdown(seconds, commandName, () => {
 					// Send completion message back to Core.js
-					parent.postMessage({ 
-						pluginMessage: { type: 'direct-countdown-complete' } 
-					}, '*')
+					FP.notifyEditor({ 
+						 type: 'direct-countdown-complete'
+					})
 				})
 			} else {
 				console.error('[App] FormView not found or startCountdown method not available')

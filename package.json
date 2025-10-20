@@ -1,26 +1,36 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "scripts": {
-    "dev": "NODE_ENV=development npx webpack --mode=development --watch",
-    "build": "NODE_ENV=production npx webpack --mode=production",
+    "dev:figma": "NODE_ENV=development DESIGN_TOOL=figma npx webpack --mode=development --watch",
+    "build:figma": "NODE_ENV=production DESIGN_TOOL=figma npx webpack --mode=production",
+    "dev:penpot": "NODE_ENV=development DESIGN_TOOL=penpot npx webpack --mode=development --watch & npx serve penpot --cors",
+    "build:penpot": "NODE_ENV=production DESIGN_TOOL=penpot npx webpack --mode=production",
+    "deploy:prod:penpot": "netlify deploy --prod",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-transform-custom-element-classes": "^0.1.0",
-    "babel-plugin-webpack-alias": "^2.1.2",
-    "babel-preset-env": "^1.6.1",
-    "css-loader": "^3.5.2",
-    "html-webpack-inline-source-plugin": "0.0.10",
-    "html-webpack-plugin": "^3.2.0",
-    "style-loader": "^1.1.4",
-    "url-loader": "^4.1.0",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "@babel/core": "^7.23.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.23.0",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.20.7",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@babel/plugin-transform-private-property-in-object": "^7.21.0",
+    "@babel/preset-env": "^7.23.0",
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.8.1",
+    "html-inline-script-webpack-plugin": "^3.2.1",
+    "html-webpack-plugin": "^5.5.3",
+    "style-loader": "^3.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "@basiclines/leo": "^0.6.4",
-    "ua-parser-js": "^0.7.24"
+    "core-js": "^3.33.0",
+    "netlify-cli": "^23.9.1",
+    "ua-parser-js": "^0.7.24",
+    "webpack-dev-server": "^4.15.1"
   }
 }

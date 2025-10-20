@@ -3,10 +3,15 @@ import './PreferencesView.css'
 import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
 import Router from 'src/utils/Router'
-
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 import 'src/ui/components/select/SelectComponent'
 
 class PreferencesView extends Element {
+
+	beforeMount() {
+		this.FP = new FigPen(CONFIG)
+	}
 
 	savePreferences() {
 		let x_spacing = this.find('#x_spacing').value
@@ -27,7 +32,7 @@ class PreferencesView extends Element {
 		}
 
 		Tracking.track('autoSavePreferences', preferences)
-		parent.postMessage({ pluginMessage: { type: 'preferences', preferences: preferences } }, '*')
+		this.FP.notifyEditor({ type: 'preferences', preferences: preferences })
 	}
 
 	bind(e) {

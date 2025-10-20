@@ -2,6 +2,8 @@ import './DisplayComponent.css'
 import Element from 'src/ui/Element'
 import DisplayNetwork from 'src/utils/DisplayNetwork'
 import Tracking from 'src/utils/Tracking'
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 
 const PLUGIN_NAME = 'super_tidy'
 
@@ -10,6 +12,8 @@ class DisplayComponent extends Element {
 	beforeMount() {
 		// avoid display without proper data
 		if (this.attrs.lastshowndate == 'undefined') return
+
+		this.FP = new FigPen(CONFIG)
 		
 		DisplayNetwork.getAvailableAd(this.attrs.lastshowndate, this.attrs.lastshownimpression)
 		.then(ad => {
@@ -25,7 +29,7 @@ class DisplayComponent extends Element {
 	showDisplay() {
 		this.removeAttribute('hidden')		
 		Tracking.track('displayImpression', { campaign: this.data.ad.tracking })
-		parent.postMessage({ pluginMessage: { type: 'displayImpression' } }, '*')
+		this.FP.notifyEditor({ type: 'displayImpression' })
 	}
 	
 	bind() {

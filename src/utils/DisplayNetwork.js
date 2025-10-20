@@ -1,3 +1,5 @@
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 let singleton = null
 const DAILY_INTERVAL = 86400000
 const WEEKLY_INTERVAL = DAILY_INTERVAL*7
@@ -8,6 +10,7 @@ class DisplayNetwork {
 	constructor() {
 		this.root = 'https://figma-plugins-display-network.netlify.app/api.json'
 		this.timeStampNow = Date.now()
+		this.FP = new FigPen(CONFIG)
 		
 		if (!singleton) singleton = this
 		return singleton
@@ -62,7 +65,7 @@ class DisplayNetwork {
 			} else
 			if (availableTimeWindow && !availableImpression) {
 				// when impressions limit is reached and time window is valid, reset the impression
-				parent.postMessage({ pluginMessage: { type: 'resetImpression' } }, '*')
+				this.FP.notifyEditor({ type: 'resetImpression' })
 				return false
 			} else {
 				return false

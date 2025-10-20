@@ -3,12 +3,16 @@
  * Provides a centralized abstraction layer with error tracking
  */
 
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
+
 let singleton = null
 
 class Storage {
 	constructor() {
 		this.keys = new Map()
 		this.initialized = false
+		this.FigPen = new FigPen(CONFIG)
 		
 		if (!singleton) singleton = this
 		return singleton
@@ -65,7 +69,7 @@ class Storage {
 	get(key) {
 		this.validateStorageKey(key)
 		
-		return figma.clientStorage.getAsync(key)
+		return this.FigPen.getStorageItem(key)
 			.then(value => {
 				return value
 			})
@@ -85,7 +89,7 @@ class Storage {
 	set(key, value) {
 		this.validateStorageKey(key)
 		
-		return figma.clientStorage.setAsync(key, value)
+		return this.FigPen.setStorageItem(key, value)
 			.then(() => {
 				return true
 			})
@@ -106,7 +110,7 @@ class Storage {
 		keys.forEach(key => this.validateStorageKey(key))
 		
 		const promises = keys.map((key) => {
-			return figma.clientStorage.getAsync(key)
+			return this.FigPen.getStorageItem(key)
 				.then(value => {
 					return { key, value, success: true }
 				})
@@ -139,7 +143,7 @@ class Storage {
 		keys.forEach(key => this.validateStorageKey(key))
 		
 		const promises = keys.map((key) => {
-			return figma.clientStorage.setAsync(key, keyValuePairs[key])
+			return this.FigPen.setStorageItem(key, keyValuePairs[key])
 				.then(() => {
 					return { key, success: true }
 				})

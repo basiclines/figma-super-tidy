@@ -3,6 +3,11 @@
  * Pure functions for positioning, grouping, and organizing nodes
  */
 
+import FigPen from "src/utils/FigPen"
+import CONFIG from "src/Config"
+
+const FP = new FigPen(CONFIG)
+
 /**
  * Groups nodes by their position on the canvas
  * @param {Array} nodes - Array of figma nodes
@@ -271,15 +276,13 @@ export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes)
 	var frameIndex = 0
 
 	function searchPagerNodes(node, idx) {
+		let isTextNode = (FP.getNodeType(node) == 'TEXT')
 		if (typeof node.children != 'undefined') {
 			node.children.forEach(child => {
 				searchPagerNodes(child, idx)
 			})
-		} else if (node.type == 'TEXT' && node.name == pagerVariable) {
-			var font = node.fontName
-			figma.loadFontAsync(font).then(() => {
-				node.characters = idx.toString()
-			})
+		} else if (isTextNode && node.name == pagerVariable) {
+			FP.setNodeCharacters(node, idx)
 		}
 	}
 

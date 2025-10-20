@@ -4,10 +4,13 @@ import Element from 'src/ui/Element'
 import Tracking from "src/utils/Tracking"
 import { shouldShowCountdown, getCountdownSeconds } from 'src/payments/gate'
 import '../countdown/CountdownView'
+import FigPen from 'src/utils/FigPen'
+import CONFIG from 'src/Config'
 
 class FormView extends Element {
 
 	beforeMount() {
+		this.FP = new FigPen(CONFIG)
 		// Initialize pending command state
 		this.data.pendingCommand = null
 		this.data.showingCountdown = false
@@ -27,10 +30,9 @@ class FormView extends Element {
 	}
 
 	bind() {
-		window.addEventListener('message', e => {
-			let msg = event.data.pluginMessage
+		this.FP.onEditorMessage(msg => {
 			if (msg.type == 'selection') {
-				let selection = event.data.pluginMessage.selection
+				let selection = msg.selection
 				this.handleEmptyState(selection)
 			}
 		})
@@ -121,12 +123,10 @@ class FormView extends Element {
 	
 	executeCommand(commandName, options) {
 		// Send command to Core.js
-		parent.postMessage({ 
-			pluginMessage: { 
-				type: commandName, 
-				options: options 
-			} 
-		}, '*')
+		this.FP.notifyEditor({ 
+			type: commandName, 
+			options: options 
+		})
 	}
 
 
