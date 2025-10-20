@@ -190,4 +190,12 @@ export default class FigPen {
         }
     }
 
+    getNodeType(node) {
+        if (this.designTool === FIGMA) {
+            return node.type
+        } else if (this.designTool === PENPOT) {
+            return node.type.toUpperCase()
+        }
+    }
+
 }

@@ -276,11 +276,12 @@ export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes)
 	var frameIndex = 0
 
 	function searchPagerNodes(node, idx) {
+		let isTextNode = (FP.getNodeType(node) == 'TEXT')
 		if (typeof node.children != 'undefined') {
 			node.children.forEach(child => {
 				searchPagerNodes(child, idx)
 			})
-		} else if (node.type == 'TEXT' && node.name == pagerVariable) {
+		} else if (isTextNode && node.name == pagerVariable) {
 			FP.setNodeCharacters(node, idx)
 		}
 	}
