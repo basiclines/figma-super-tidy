@@ -136,6 +136,14 @@ export default class FigPen {
         }
     }
 
+    setSelection(nodes) {
+        if (this.designTool === FIGMA) {
+            return figma.currentPage.selection = nodes
+        } else if (this.designTool === PENPOT) {
+            return penpot.selection = nodes
+        }
+    }
+
     currentPage() {
         if (this.designTool === FIGMA) {
             return figma.currentPage
@@ -157,6 +165,28 @@ export default class FigPen {
             figma.notify(text)
         } else if (this.designTool === PENPOT) {
             console.warn("showNotification not supported for PenPot:", text)
+        }
+    }
+
+    setNodeCharacters(node, characters) {
+        return new Promise((resolve, reject) => {
+            if (this.designTool === FIGMA) {
+                figma.loadFontAsync(node.fontName).then(() => {
+                    node.characters = characters.toString()
+                    resolve(node.characters)
+                })
+            } else if (this.designTool === PENPOT) {
+                node.characters = characters.toString()
+                resolve(node.characters)
+            }
+        })
+    }
+
+    createFrame() {
+        if (this.designTool === FIGMA) {
+            return figma.createFrame()
+        } else if (this.designTool === PENPOT) {
+            return penpot.createBoard()
         }
     }
 
