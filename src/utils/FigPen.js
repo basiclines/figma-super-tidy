@@ -58,14 +58,6 @@ export default class FigPen {
         }
     }
 
-    currentSelection() {
-        if (this.designTool === FIGMA) {
-            return figma.currentPage.selection
-        } else if (this.designTool === PENPOT) {
-            return penpot.selection
-        }
-    }
-
     notifyUI(message) {
         if (this.designTool === FIGMA) {
             figma.ui.postMessage(message)

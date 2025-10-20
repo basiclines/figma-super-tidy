@@ -42,16 +42,36 @@
 	--color-decorator-strong: #C5CED2;
 	--color-decorator-regular: #D5DDE2;
 	--color-decorator-soft: #F1F4F4;
-
-	--color-separator: rgba(0, 0, 0, 0.12);
+	--color-decorator-soft-invert: rgb(255, 255, 255, 0.48);
+	--color-separator: rgba(0, 0, 0, 0.08);
 }
+
+/* Penpot Background */
+root-ui[theme="dark"] { --color-background-primary: #18181a; }
+
+/* Figma Background */
+.figma-dark body { --color-background-primary: var(--figma-color-bg); }
 
 /* Dark theme for both Penpot and Figma */
 root-ui[theme="dark"], .figma-dark body {
 
+	--color-interactive-positive: #18A0FB;
+	--color-interactive-negative: #E41761;
+	--color-text-primary: rgba(255, 255, 255, 0.9);
+	--color-text-secondary: rgba(255, 255, 255, 0.75);
+	--color-text-tertiary: rgba(255, 255, 255, 0.6);
+	--color-decorator-strong: rgba(255, 255, 255, 0.32);
+	--color-decorator-regular: rgba(255, 255, 255, 0.24);
+	--color-decorator-soft: rgba(255, 255, 255, 0.16);
+	--color-decorator-soft-invert: rgb(0, 0, 0, 0.48);
+	--color-separator: rgba(255, 255, 255, 0.08);
+
 }
 
-body { text-align: left; overflow: hidden; }
+/* Make FigmaUI.css icons dark in dark mode */
+root-ui[theme="dark"] .icon, .figma-dark body .icon { filter: invert(1); }
+
+body { text-align: left; overflow: hidden; color: var(--color-text-primary); }
 root-ui { transition: opacity 0.05s linear; display: block; position: relative; height: 539px; background-color: var(--color-background-primary); }
 root-ui[notready] { opacity: 0; pointer-events: none; }
 
