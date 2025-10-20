@@ -207,4 +207,22 @@ export default class FigPen {
         }
     }
 
+    startUndoBlock() {
+        if (this.designTool === FIGMA) {
+            console.warn('startUndoBlock not supported in Figma. https://developers.figma.com/docs/plugins/api/properties/figma-commitundo/')
+        } else if (this.designTool === PENPOT) {
+            console.log('startUndoBlock', penpot.history)
+            return penpot.history.undoBlockBegin()
+        }
+    }
+
+    finishUndoBlock(historyId) {
+        if (this.designTool === FIGMA) {
+            console.warn('finishUndoBlock not supported in Figma. https://developers.figma.com/docs/plugins/api/properties/figma-commitundo/')
+        } else if (this.designTool === PENPOT) {
+            console.log('finishUndoBlock', penpot.history)
+            return penpot.history.undoBlockFinish(historyId)
+        }
+    }
+
 }

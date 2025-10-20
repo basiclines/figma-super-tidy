@@ -86,12 +86,16 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID,
 
 		// Bind direct countdown completion handler
 		MessageBus.bind('direct-countdown-complete', (msg) => {
+			let historyId = FP.startUndoBlock()
 			executeCommand()
+			FP.finishUndoBlock(historyId)
 			FP.closePlugin()
 		})
 	} else {
 		// Execute immediately if licensed
+		let historyId = FP.startUndoBlock()
 		executeCommand()
+		FP.finishUndoBlock(historyId)
 		FP.closePlugin()
 	}
 }
@@ -199,10 +203,12 @@ Storage.getMultiple([
 		var TIDY_ENABLED = msg.options.tidy
 		var PAGER_ENABLED = msg.options.pager
 
+		let historyId = FP.startUndoBlock()
 		if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
 		if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
 		if (REORDER_ENABLED) cmdReorder(preferences.layout_paradigm || 'rows')
 		if (PAGER_ENABLED) cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
+		FP.finishUndoBlock(historyId)
 		FP.showNotification('Super Tidy')
 		setTimeout(() => FP.closePlugin(), 100)
 	})

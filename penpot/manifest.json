@@ -1,6 +1,6 @@
 {
     "name": "Super Tidy",
-    "description": "Plugin description",
+    "description": "Rename, reorder and tidy all your nodes in 1 click",
     "code": "./dist/core.js",
     "icon": "./icon.png",
     "permissions": [
