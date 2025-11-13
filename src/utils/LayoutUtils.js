@@ -270,10 +270,11 @@ export function reorderNodes(groupedNodes, layout, parent, allNodes) {
  * @param {string} layout - 'rows' or 'columns' layout paradigm
  * @param {string} pagerVariable - Variable name to replace with numbers
  * @param {Array} allNodes - All nodes in the parent
- * @returns {void}
+ * @returns {Promise<void>}
  */
-export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes) {
+export async function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes) {
 	var frameIndex = 0
+	var promises = []
 
 	function searchPagerNodes(node, idx) {
 		let isTextNode = (FP.getNodeType(node) == 'TEXT')
@@ -282,7 +283,7 @@ export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes)
 				searchPagerNodes(child, idx)
 			})
 		} else if (isTextNode && node.name == pagerVariable) {
-			FP.setNodeCharacters(node, idx)
+			promises.push(FP.setNodeCharacters(node, idx))
 		}
 	}
 
@@ -290,7 +291,9 @@ export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes)
 		groupedNodes.forEach(column => {
 			column.rows.forEach(row => {
 				var frame = allNodes.find(node => node.id === row.id)
-				searchPagerNodes(frame, frameIndex)
+				if (frame) {
+					searchPagerNodes(frame, frameIndex)
+				}
 				++frameIndex
 			})
 		})
@@ -298,11 +301,16 @@ export function applyPagerNumbers(groupedNodes, layout, pagerVariable, allNodes)
 		groupedNodes.forEach(row => {
 			row.columns.forEach(col => {
 				var frame = allNodes.find(node => node.id === col.id)
-				searchPagerNodes(frame, frameIndex)
+				if (frame) {
+					searchPagerNodes(frame, frameIndex)
+				}
 				++frameIndex
 			})
 		})
 	}
+
+	// Wait for all font loading and character setting to complete
+	await Promise.all(promises)
 }
 
 /**

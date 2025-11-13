@@ -85,18 +85,20 @@ function ensureDirectCommandGate(commandName, executeCommand, preferences, UUID,
 		
 
 		// Bind direct countdown completion handler
-		MessageBus.bind('direct-countdown-complete', (msg) => {
+		MessageBus.bind('direct-countdown-complete', async (msg) => {
 			let historyId = FP.startUndoBlock()
-			executeCommand()
+			await executeCommand()
 			FP.finishUndoBlock(historyId)
 			FP.closePlugin()
 		})
 	} else {
 		// Execute immediately if licensed
-		let historyId = FP.startUndoBlock()
-		executeCommand()
-		FP.finishUndoBlock(historyId)
-		FP.closePlugin()
+		(async () => {
+			let historyId = FP.startUndoBlock()
+			await executeCommand()
+			FP.finishUndoBlock(historyId)
+			FP.closePlugin()
+		})()
 	}
 }
 
@@ -129,13 +131,13 @@ function cmdTidy(xSpacing, ySpacing, wrapInstances, layoutParadigm = 'rows') {
 	repositionNodes(groupedNodes, xSpacing, ySpacing, wrapInstances, layoutParadigm, allNodes)
 }
 
-function cmdPager(pager_variable, layoutParadigm = 'rows') {
+async function cmdPager(pager_variable, layoutParadigm = 'rows') {
 	var selection = FP.currentSelection()
 	var parent = (selection[0].type == 'PAGE') ? FP.currentPage() : selection[0].parent
 	var allNodes = parent.children
 	var groupedNodes = getNodesGroupedbyPosition(selection, layoutParadigm)
 
-	applyPagerNumbers(groupedNodes, layoutParadigm, pager_variable, allNodes)
+	await applyPagerNumbers(groupedNodes, layoutParadigm, pager_variable, allNodes)
 }
 
 // Obtain UUID, preferences, and license then trigger init event
@@ -197,7 +199,7 @@ Storage.getMultiple([
 	})
 
 	// Bind all message handlers using MessageBus
-	MessageBus.bind('tidy', (msg) => {
+	MessageBus.bind('tidy', async (msg) => {
 		var RENAMING_ENABLED = msg.options.renaming
 		var REORDER_ENABLED = msg.options.reorder
 		var TIDY_ENABLED = msg.options.tidy
@@ -207,7 +209,7 @@ Storage.getMultiple([
 		if (TIDY_ENABLED) cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
 		if (RENAMING_ENABLED) cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
 		if (REORDER_ENABLED) cmdReorder(preferences.layout_paradigm || 'rows')
-		if (PAGER_ENABLED) cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
+		if (PAGER_ENABLED) await cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 		FP.finishUndoBlock(historyId)
 		FP.showNotification('Super Tidy')
 		setTimeout(() => FP.closePlugin(), 100)
@@ -296,18 +298,18 @@ Storage.getMultiple([
 	} else
 	if (cmd == 'pager') {
 		// RUNS WITH COUNTDOWN GATE
-		ensureDirectCommandGate('pager', () => {
-			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
+		ensureDirectCommandGate('pager', async () => {
+			await cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			FP.showNotification('Super Tidy: Pager')
 		}, preferences, UUID, license)
 	} else
 	if (cmd == 'all') {
 		// RUNS WITH COUNTDOWN GATE
-		ensureDirectCommandGate('all', () => {
+		ensureDirectCommandGate('all', async () => {
 			cmdTidy(preferences.spacing.x, preferences.spacing.y, preferences.wrap_instances, preferences.layout_paradigm || 'rows')
 			cmdReorder(preferences.layout_paradigm || 'rows')
 			cmdRename(preferences.rename_strategy, preferences.start_name, preferences.layout_paradigm || 'rows')
-			cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
+			await cmdPager(preferences.pager_variable, preferences.layout_paradigm || 'rows')
 			FP.showNotification('Super Tidy')
 		}, preferences, UUID, license)
 	} else

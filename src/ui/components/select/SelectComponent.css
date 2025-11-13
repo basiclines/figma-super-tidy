@@ -67,5 +67,5 @@ c-select li:hover { background-color: var(--color-interactive-positive); }
 
 c-select li.separator { pointer-events: none; height: 1px; margin: 8px 0; background-color: rgba(255, 255, 255, 0.2); }
 c-select li .c-icon { display: inline-block; opacity: 0; margin-right: 8px; pointer-events: none; }
-c-select li .c-icon path { fill: #FFFFFF; stroke: #FFFFFF; }
+c-select li .c-icon path { fill: var(--color-text-primary); stroke: var(--color-text-primary); }
 c-select li[selected] .c-icon { opacity: 1; }
